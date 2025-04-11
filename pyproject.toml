@@ -26,10 +26,10 @@ dependencies = [
 gpu = ["accelerate"]
 
 [tool.setuptools]
-packages = ["utils", "model", "data"]
+packages = ["utils", "models"]
 
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project.urls]
