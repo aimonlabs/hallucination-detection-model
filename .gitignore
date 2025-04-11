@@ -1,0 +1,17 @@
+# Exclude test.py
+test.py
+
+# Exclude data directory
+data/
+
+# Exclude all __pycache__ directories
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*/*/*/__pycache__/
+
+# Other common files to exclude
+*.pyc
+*.pyo
+*.pyd
+.Python
