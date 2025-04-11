@@ -1,5 +1,5 @@
 # Debug functions
-from utils.process_output import analyze_token_scores
+from hdm2.utils.process_output import analyze_token_scores
 
 def debug_token_mapping(sentences_data, tokenizer, response_tokens):
     """

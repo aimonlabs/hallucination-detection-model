@@ -1,8 +1,10 @@
 # Exclude test.py
 test.py
+hdm2/test.py
 
 # Exclude data directory
 data/
+hdm2/data/
 
 # Exclude all __pycache__ directories
 __pycache__/

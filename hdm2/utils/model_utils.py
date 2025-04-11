@@ -1,8 +1,8 @@
 import torch
 import numpy as np
 from data.process_text import extract_sentences, prepare_single_input, add_period_if_missing, get_sentence_token_boundaries, prepare_sentences, map_tokens_to_sentences
-from utils.debug_utils import debug_token_mapping, debug_candidate_sentences
-from utils.process_output import get_candidate_sentences_with_stats, get_high_scoring_word_boundaries, adjust_token_scores
+from hdm2.utils.debug_utils import debug_token_mapping, debug_candidate_sentences
+from hdm2.utils.process_output import get_candidate_sentences_with_stats, get_high_scoring_word_boundaries, adjust_token_scores
 
 def get_last_token_embeddings(hidden_states, attention_mask, padding='right'):
     """

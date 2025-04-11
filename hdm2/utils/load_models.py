@@ -3,10 +3,10 @@ import os
 import torch
 from transformers import AutoTokenizer, AutoModel
 from peft import PeftModel, PeftConfig
-from models.context_knowledge import TokenLogitsToSequenceModel
+from hdm2.models.context_knowledge import TokenLogitsToSequenceModel
 from huggingface_hub import hf_hub_download
 import tempfile
-from models.common_knowledge import CKClassifier
+from hdm2.models.common_knowledge import CKClassifier
 from safetensors.torch import load_file
 
 def load_model_components(model_components_path=None, 
