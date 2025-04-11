@@ -19,7 +19,8 @@ dependencies = [
   "numpy",
   "huggingface-hub",
   "safetensors",
-  "tqdm"
+  "tqdm",
+  "bitsandbytes",
 ]
 
 [project.optional-dependencies]
