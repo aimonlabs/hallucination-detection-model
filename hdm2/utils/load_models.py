@@ -8,9 +8,13 @@ from huggingface_hub import hf_hub_download
 import tempfile
 from hdm2.models.common_knowledge import CKClassifier
 from safetensors.torch import load_file
+from transformers import BitsAndBytesConfig
 
 def load_model_components(model_components_path=None, 
-                         use_hf=True, repo_id=None):
+                         use_hf=True, repo_id=None,
+                         is_load_in_8bit=False,
+                         quantization_config=None,
+                         ):
     """
     Load the saved model components from local path or Hugging Face.
     """
@@ -71,14 +75,34 @@ def load_model_components(model_components_path=None,
     # 3. Initialize tokenizer
     tokenizer = AutoTokenizer.from_pretrained(base_model_name)
     
-    # 4. Initialize model without PEFT
-    model = TokenLogitsToSequenceModel(
-        model_name=base_model_name,
-        num_token_labels=num_token_labels,
-        num_seq_labels=num_seq_labels,
-        is_apply_peft=False
-    )
-    
+   # Add before initializing the model
+    if is_load_in_8bit:
+        if quantization_config is None:
+            # Setup quantization configuration
+            quantization_config = BitsAndBytesConfig(
+                load_in_8bit=True,
+                llm_int8_threshold=6.0,
+                #llm_int8_skip_modules=[ 'tok_score', 
+                #                       'seq_score']
+            )
+       
+        # Initialize model with quantization
+        model = TokenLogitsToSequenceModel(
+            model_name=base_model_name,
+            num_token_labels=num_token_labels,
+            num_seq_labels=num_seq_labels,
+            is_apply_peft=False,
+            quantization_config=quantization_config
+        )
+    else:
+       # Original model initialization
+        model = TokenLogitsToSequenceModel(
+            model_name=base_model_name,
+            num_token_labels=num_token_labels,
+            num_seq_labels=num_seq_labels,
+            is_apply_peft=False
+        )
+
     # 5. Load LoRA adapter
     adapter_config_path = os.path.join(adapter_path, "adapter_config.json")
     with open(adapter_config_path, "r") as f:
@@ -124,14 +148,18 @@ def load_hallucination_detection_model(
     ck_classifier_path='ck_classifier_op_2/checkpoint-4802/',
     use_hf=False,
     repo_id=None,
-    device='cuda'
+    device='cuda',
+    is_load_in_8bit=False,
+    quantization_config=None,
 ):
     """Load all components of the hallucination detection system."""
     # Load token model and tokenizer
     token_model, tokenizer = load_model_components(
         model_components_path=model_components_path,
         use_hf=use_hf,
-        repo_id=repo_id
+        repo_id=repo_id,
+        is_load_in_8bit=is_load_in_8bit,
+        quantization_config=quantization_config,
     )
     
     # Load CK classifier

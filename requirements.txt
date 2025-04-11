@@ -1,3 +1,4 @@
+bitsandbytes==0.45.5
 huggingface_hub==0.29.2
 nltk==3.9.1
 numpy==2.2.4

@@ -80,7 +80,8 @@ class TokenLogitsToSequenceModel(nn.Module):
                  num_seq_labels, 
                  num_decoder_layers=None,
                  is_apply_peft=True,
-                 peft_config=None):
+                 peft_config=None,
+                 quantization_config=None):
         super(TokenLogitsToSequenceModel, self).__init__()
 
         base_config = AutoConfig.from_pretrained(model_name)
@@ -105,12 +106,22 @@ class TokenLogitsToSequenceModel(nn.Module):
             assert 1 < num_decoder_layers <= base_num_decoders
         
         num_decoder_key_str = self.model_handler.get_decoder_layer_str()
-        
+
+        # Build model kwargs
+        model_kwargs = {}
         if num_decoder_layers is not None:
-            self.backbone = AutoModel.from_pretrained(model_name,
-                                                  **{num_decoder_key_str: num_decoder_layers}                                                  )
-        else:
-            self.backbone = AutoModel.from_pretrained(model_name)
+            model_kwargs[num_decoder_key_str] = num_decoder_layers
+
+        # Add quantization config if provided
+        if quantization_config is not None:
+            model_kwargs["quantization_config"] = quantization_config
+            # Automatically manage device mapping when using quantization
+            model_kwargs["device_map"] = "auto"
+
+        # Load the model with all appropriate parameters
+        self.backbone = AutoModel.from_pretrained(model_name, 
+                                                  **model_kwargs)
+        
 
         if is_apply_peft:
             if peft_config is None:
