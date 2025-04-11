@@ -26,7 +26,7 @@ dependencies = [
 gpu = ["accelerate"]
 
 [tool.setuptools]
-packages = ["hdm2"]
+packages = ["hdm2", "hdm2.utils", "hdm2.models"]
 
 [build-system]
 requires = ["setuptools>=61.0"]
