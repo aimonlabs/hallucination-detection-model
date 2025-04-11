@@ -27,7 +27,6 @@ gpu = ["accelerate"]
 
 [tool.setuptools]
 packages = ["utils", "model", "data"]
-package-dir = {"" = "src"}
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
