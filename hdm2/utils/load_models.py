@@ -1,6 +1,7 @@
 import json
 import os
 import torch
+import logging
 from transformers import AutoTokenizer, AutoModel
 from peft import PeftModel, PeftConfig
 from hdm2.models.context_knowledge import TokenLogitsToSequenceModel
@@ -10,26 +11,27 @@ from hdm2.models.common_knowledge import CKClassifier
 from safetensors.torch import load_file
 from transformers import BitsAndBytesConfig
 
-def load_model_components(model_components_path=None, 
-                         use_hf=True, repo_id=None,
-                         load_in_8bit=False,
-                         quantization_config=None,
-                         ):
+def load_model_components(
+    repo_id=None,
+    model_components_path=None,
+    load_in_8bit=False,
+    quantization_config=None,
+):
     """
     Load the saved model components from Hugging Face or local path.
     
     Args:
-        model_components_path: Path to local model components (if use_hf=False)
-        use_hf: Whether to load from HuggingFace (True) or local (False)
-        repo_id: HuggingFace repository ID (required if use_hf=True)
+        repo_id: HuggingFace repository ID (required if model_components_path is None)
+        model_components_path: Path to local model components (if specified, load locally)
         load_in_8bit: Whether to load model in 8-bit precision
         quantization_config: Optional custom quantization configuration
     """
     
-    if use_hf:
+    if model_components_path is None:
         if repo_id is None:
-            raise ValueError("repo_id must be provided when use_hf=True")
+            raise ValueError("Either repo_id or model_components_path must be provided")
             
+        # Load from HuggingFace
         # Create a temporary directory to store downloaded files
         temp_dir = tempfile.mkdtemp()
         
@@ -69,9 +71,9 @@ def load_model_components(model_components_path=None,
         tok_score_path = get_file("tok_score.pt")
         seq_score_path = get_file("seq_score.pt")
     else:
-        if model_components_path is None:
-            raise ValueError("model_components_path must be provided when use_hf=False")
-            
+        # Load from local path
+        logging.info(f"Loading model components from local path: {model_components_path}")
+        
         # Use local paths
         with open(os.path.join(model_components_path, "model_config.json"), "r") as f:
             model_config = json.load(f)
@@ -158,7 +160,6 @@ def load_hallucination_detection_model(
     repo_id=None,
     model_components_path=None,
     ck_classifier_path=None,
-    use_hf=True,
     device='cuda',
     load_in_8bit=False,
     quantization_config=None,
@@ -167,37 +168,37 @@ def load_hallucination_detection_model(
     Load all components of the hallucination detection system.
     
     Args:
-        repo_id: HuggingFace repository ID (required if use_hf=True)
-        model_components_path: Path to local model components (required if use_hf=False)
-        ck_classifier_path: Path to local CK classifier (required if use_hf=False)
-        use_hf: Whether to load from HuggingFace (True) or local (False)
+        repo_id: HuggingFace repository ID (required if loading from HF)
+        model_components_path: Path to local model components (if specified, load locally)
+        ck_classifier_path: Path to local CK classifier (required if loading locally)
         device: Device to load model on ('cuda' or 'cpu')
         load_in_8bit: Whether to load model in 8-bit precision
         quantization_config: Optional custom quantization configuration
     """
-    # Validate parameters based on use_hf flag
-    if use_hf and repo_id is None:
-        raise ValueError("repo_id must be provided when use_hf=True")
-    if not use_hf and (model_components_path is None or ck_classifier_path is None):
-        raise ValueError("model_components_path and ck_classifier_path must be provided when use_hf=False")
+    # Determine loading method and validate parameters
+    loading_from_local = model_components_path is not None
     
-    # Set default paths for local loading
-    if not use_hf and model_components_path is None:
-        model_components_path = '../models/token_seq_model/model_components/'
-    if not use_hf and ck_classifier_path is None:
-        ck_classifier_path = 'ck_classifier_op_2/checkpoint-4802/'
+    if loading_from_local:
+        if ck_classifier_path is None:
+            # Set default path for CK classifier when loading locally
+            ck_classifier_path = 'ck_classifier_op_2/checkpoint-4802/'
+            logging.info(f"Using default CK classifier path: {ck_classifier_path}")
+    else:
+        # Loading from HF
+        if repo_id is None:
+            raise ValueError("repo_id must be provided when loading from HuggingFace")
     
     # Load token model and tokenizer
     token_model, tokenizer = load_model_components(
-        model_components_path=model_components_path,
-        use_hf=use_hf,
         repo_id=repo_id,
+        model_components_path=model_components_path,
         load_in_8bit=load_in_8bit,
         quantization_config=quantization_config,
     )
     
     # Load CK classifier
-    if use_hf:
+    if not loading_from_local:
+        # Load from HuggingFace
         import tempfile
         from huggingface_hub import hf_hub_download
         
@@ -220,7 +221,8 @@ def load_hallucination_detection_model(
             # Fallback if loading with safetensors fails
             ck_classifier.load_state_dict(torch.load(ck_path, map_location=device))
     else:
-        # Use local path
+        # Load from local path
+        logging.info(f"Loading CK classifier from local path: {ck_classifier_path}")
         ck_classifier = CKClassifier(hidden_size=2048, num_labels=2).to(device)
         ck_classifier = load_ck_checkpoint(ck_classifier, ck_classifier_path)
     
