@@ -12,14 +12,24 @@ from transformers import BitsAndBytesConfig
 
 def load_model_components(model_components_path=None, 
                          use_hf=True, repo_id=None,
-                         is_load_in_8bit=False,
+                         load_in_8bit=False,
                          quantization_config=None,
                          ):
     """
-    Load the saved model components from local path or Hugging Face.
+    Load the saved model components from Hugging Face or local path.
+    
+    Args:
+        model_components_path: Path to local model components (if use_hf=False)
+        use_hf: Whether to load from HuggingFace (True) or local (False)
+        repo_id: HuggingFace repository ID (required if use_hf=True)
+        load_in_8bit: Whether to load model in 8-bit precision
+        quantization_config: Optional custom quantization configuration
     """
     
     if use_hf:
+        if repo_id is None:
+            raise ValueError("repo_id must be provided when use_hf=True")
+            
         # Create a temporary directory to store downloaded files
         temp_dir = tempfile.mkdtemp()
         
@@ -59,6 +69,9 @@ def load_model_components(model_components_path=None,
         tok_score_path = get_file("tok_score.pt")
         seq_score_path = get_file("seq_score.pt")
     else:
+        if model_components_path is None:
+            raise ValueError("model_components_path must be provided when use_hf=False")
+            
         # Use local paths
         with open(os.path.join(model_components_path, "model_config.json"), "r") as f:
             model_config = json.load(f)
@@ -75,15 +88,13 @@ def load_model_components(model_components_path=None,
     # 3. Initialize tokenizer
     tokenizer = AutoTokenizer.from_pretrained(base_model_name)
     
-   # Add before initializing the model
-    if is_load_in_8bit:
+    # 4. Initialize model with or without quantization
+    if load_in_8bit:
         if quantization_config is None:
-            # Setup quantization configuration
+            # Setup default quantization configuration
             quantization_config = BitsAndBytesConfig(
                 load_in_8bit=True,
                 llm_int8_threshold=6.0,
-                #llm_int8_skip_modules=[ 'tok_score', 
-                #                       'seq_score']
             )
        
         # Initialize model with quantization
@@ -95,7 +106,7 @@ def load_model_components(model_components_path=None,
             quantization_config=quantization_config
         )
     else:
-       # Original model initialization
+        # Standard model initialization
         model = TokenLogitsToSequenceModel(
             model_name=base_model_name,
             num_token_labels=num_token_labels,
@@ -144,21 +155,44 @@ def load_ck_checkpoint(model, checkpoint_path):
     return model
 
 def load_hallucination_detection_model(
-    model_components_path='../models/token_seq_model/model_components/',
-    ck_classifier_path='ck_classifier_op_2/checkpoint-4802/',
-    use_hf=False,
     repo_id=None,
+    model_components_path=None,
+    ck_classifier_path=None,
+    use_hf=True,
     device='cuda',
-    is_load_in_8bit=False,
+    load_in_8bit=False,
     quantization_config=None,
 ):
-    """Load all components of the hallucination detection system."""
+    """
+    Load all components of the hallucination detection system.
+    
+    Args:
+        repo_id: HuggingFace repository ID (required if use_hf=True)
+        model_components_path: Path to local model components (required if use_hf=False)
+        ck_classifier_path: Path to local CK classifier (required if use_hf=False)
+        use_hf: Whether to load from HuggingFace (True) or local (False)
+        device: Device to load model on ('cuda' or 'cpu')
+        load_in_8bit: Whether to load model in 8-bit precision
+        quantization_config: Optional custom quantization configuration
+    """
+    # Validate parameters based on use_hf flag
+    if use_hf and repo_id is None:
+        raise ValueError("repo_id must be provided when use_hf=True")
+    if not use_hf and (model_components_path is None or ck_classifier_path is None):
+        raise ValueError("model_components_path and ck_classifier_path must be provided when use_hf=False")
+    
+    # Set default paths for local loading
+    if not use_hf and model_components_path is None:
+        model_components_path = '../models/token_seq_model/model_components/'
+    if not use_hf and ck_classifier_path is None:
+        ck_classifier_path = 'ck_classifier_op_2/checkpoint-4802/'
+    
     # Load token model and tokenizer
     token_model, tokenizer = load_model_components(
         model_components_path=model_components_path,
         use_hf=use_hf,
         repo_id=repo_id,
-        is_load_in_8bit=is_load_in_8bit,
+        load_in_8bit=load_in_8bit,
         quantization_config=quantization_config,
     )
     
@@ -177,16 +211,13 @@ def load_hallucination_detection_model(
             local_dir=temp_dir
         )
         
-        # Load classifier with safetensors
+        # Load classifier
+        ck_classifier = CKClassifier(hidden_size=2048, num_labels=2).to(device)
         try:
-            from safetensors.torch import load_file
-            ck_classifier = CKClassifier(hidden_size=2048, num_labels=2).to(device)
             ck_weights = load_file(ck_path, device=device)
             ck_classifier.load_state_dict(ck_weights)
-        except ImportError:
-            # Fallback if safetensors isn't available
-            import torch
-            ck_classifier = CKClassifier(hidden_size=2048, num_labels=2).to(device)
+        except Exception as e:
+            # Fallback if loading with safetensors fails
             ck_classifier.load_state_dict(torch.load(ck_path, map_location=device))
     else:
         # Use local path

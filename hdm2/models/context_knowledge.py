@@ -115,8 +115,12 @@ class TokenLogitsToSequenceModel(nn.Module):
         # Add quantization config if provided
         if quantization_config is not None:
             model_kwargs["quantization_config"] = quantization_config
-            # Automatically manage device mapping when using quantization
-            model_kwargs["device_map"] = "auto"
+        else:
+            model_kwargs["torch_dtype"] = "auto"
+
+        
+        model_kwargs["device_map"] = "auto"
+
 
         # Load the model with all appropriate parameters
         self.backbone = AutoModel.from_pretrained(model_name, 
