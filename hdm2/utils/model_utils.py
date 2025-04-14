@@ -281,8 +281,13 @@ def _detect_hallucinations(prompt, context, response,
     
     # Separate model inputs from mapping data
     model_inputs = {k: v for k, v in tokens.items() if k != 'offset_mapping'}
-    # Only move model inputs to GPU
-    model_inputs = {k: v.to(token_model.backbone.device) for k, v in model_inputs.items()}
+
+    # determine the model's dtype
+    model_dtype = next(token_model.parameters()).dtype
+
+    # Move inputs to device with the correct dtype (only move the inputs)
+    model_inputs = {k: v.to(token_model.backbone.device, dtype=model_dtype) 
+                    for k, v in model_inputs.items()}
 
     # Get token scores using original approach
     with torch.no_grad():
