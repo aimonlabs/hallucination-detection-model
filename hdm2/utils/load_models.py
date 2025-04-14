@@ -16,6 +16,7 @@ def load_model_components(
     model_components_path=None,
     load_in_8bit=False,
     quantization_config=None,
+    dtype=torch.bfloat16,
 ):
     """
     Load the saved model components from Hugging Face or local path.
@@ -90,6 +91,9 @@ def load_model_components(
     # 3. Initialize tokenizer
     tokenizer = AutoTokenizer.from_pretrained(base_model_name)
     
+    if dtype is None:
+        dtype = torch.bfloat16
+
     # 4. Initialize model with or without quantization
     if load_in_8bit:
         if quantization_config is None:
@@ -98,23 +102,16 @@ def load_model_components(
                 load_in_8bit=True,
                 llm_int8_threshold=6.0,
             )
+            dtype = None
        
-        # Initialize model with quantization
-        model = TokenLogitsToSequenceModel(
-            model_name=base_model_name,
-            num_token_labels=num_token_labels,
-            num_seq_labels=num_seq_labels,
-            is_apply_peft=False,
-            quantization_config=quantization_config
-        )
-    else:
-        # Standard model initialization
-        model = TokenLogitsToSequenceModel(
-            model_name=base_model_name,
-            num_token_labels=num_token_labels,
-            num_seq_labels=num_seq_labels,
-            is_apply_peft=False
-        )
+    model = TokenLogitsToSequenceModel(
+        model_name=base_model_name,
+        num_token_labels=num_token_labels,
+        num_seq_labels=num_seq_labels,
+        is_apply_peft=False,
+        quantization_config=quantization_config,
+        dtype=dtype,
+    )
 
     # 5. Load LoRA adapter
     adapter_config_path = os.path.join(adapter_path, "adapter_config.json")
@@ -131,13 +128,19 @@ def load_model_components(
     
     # 6. Load classifier components
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model_dtype = next(model.parameters()).dtype
+
+    # Load classifier weights and convert to right dtype
+    tok_score_state = torch.load(tok_score_path, map_location=device)
+    seq_score_state = torch.load(seq_score_path, map_location=device)
+
+    # Convert state_dict dtype if needed
+    if not load_in_8bit:  # No need to convert for 8-bit quantized models
+        tok_score_state = {k: v.to(model_dtype) for k, v in tok_score_state.items()}
+        seq_score_state = {k: v.to(model_dtype) for k, v in seq_score_state.items()}
     
-    model.tok_score.load_state_dict(
-        torch.load(tok_score_path, map_location=device)
-    )
-    model.seq_score.load_state_dict(
-        torch.load(seq_score_path, map_location=device)
-    )
+    model.tok_score.load_state_dict(tok_score_state)
+    model.seq_score.load_state_dict(seq_score_state)
     
     # 7. Move model to device
     model = model.to(device)
@@ -163,6 +166,7 @@ def load_hallucination_detection_model(
     device='cuda',
     load_in_8bit=False,
     quantization_config=None,
+    dtype=torch.bfloat16,
 ):
     """
     Load all components of the hallucination detection system.
@@ -194,9 +198,13 @@ def load_hallucination_detection_model(
         model_components_path=model_components_path,
         load_in_8bit=load_in_8bit,
         quantization_config=quantization_config,
+        dtype=dtype,
     )
     
-    # Load CK classifier
+    # Load classifier
+    ck_classifier = CKClassifier(hidden_size=2048, num_labels=2).to(device)
+    
+    # Load CK classifier weights based on source
     if not loading_from_local:
         # Load from HuggingFace
         import tempfile
@@ -212,18 +220,26 @@ def load_hallucination_detection_model(
             local_dir=temp_dir
         )
         
-        # Load classifier
-        ck_classifier = CKClassifier(hidden_size=2048, num_labels=2).to(device)
+        # Load the weights
         try:
+            # Try loading with safetensors
             ck_weights = load_file(ck_path, device=device)
-            ck_classifier.load_state_dict(ck_weights)
         except Exception as e:
-            # Fallback if loading with safetensors fails
-            ck_classifier.load_state_dict(torch.load(ck_path, map_location=device))
+            # Fallback to regular torch loading
+            ck_weights = torch.load(ck_path, map_location=device)
+        
+        # Load weights
+        ck_classifier.load_state_dict(ck_weights)
     else:
         # Load from local path
         logging.info(f"Loading CK classifier from local path: {ck_classifier_path}")
-        ck_classifier = CKClassifier(hidden_size=2048, num_labels=2).to(device)
         ck_classifier = load_ck_checkpoint(ck_classifier, ck_classifier_path)
+    
+    # Match CK classifier dtype to token model or specified dtype
+    if load_in_8bit:
+        model_dtype = next(token_model.parameters()).dtype
+        ck_classifier = ck_classifier.to(model_dtype)
+    elif dtype is not None:
+        ck_classifier = ck_classifier.to(dtype)
     
     return token_model, ck_classifier, tokenizer

@@ -6,6 +6,7 @@ from typing import Dict, Type
 from torch import nn
 from torch.nn import CrossEntropyLoss
 from transformers import AutoTokenizer
+import bitsandbytes as bnb
 
 @dataclass
 class ModelOutputs:
@@ -81,7 +82,9 @@ class TokenLogitsToSequenceModel(nn.Module):
                  num_decoder_layers=None,
                  is_apply_peft=True,
                  peft_config=None,
-                 quantization_config=None):
+                 quantization_config=None,
+                 dtype=torch.bfloat16,
+                 ):
         super(TokenLogitsToSequenceModel, self).__init__()
 
         base_config = AutoConfig.from_pretrained(model_name)
@@ -112,12 +115,16 @@ class TokenLogitsToSequenceModel(nn.Module):
         if num_decoder_layers is not None:
             model_kwargs[num_decoder_key_str] = num_decoder_layers
 
+        # Set dtype
+        if quantization_config is None and dtype is not None:
+            model_kwargs["torch_dtype"] = dtype
+
         # Add quantization config if provided
         if quantization_config is not None:
             model_kwargs["quantization_config"] = quantization_config
-        
-        model_kwargs["device_map"] = "auto"
 
+        model_kwargs["device_map"] = "auto"
+                    
         # Load the model with all appropriate parameters
         self.backbone = AutoModel.from_pretrained(model_name, 
                                                   **model_kwargs)
@@ -144,11 +151,24 @@ class TokenLogitsToSequenceModel(nn.Module):
 
         self.config = AutoConfig.from_pretrained(model_name)
         #super().__init__(self.config)
+
+        model_dtype = next(self.backbone.parameters()).dtype
         
         if self.num_seq_labels is not None:
-            self.seq_score = nn.Linear(self.backbone.config.hidden_size, 
-                                       self.num_seq_labels, 
-                                       bias=False)
+            if quantization_config is not None:
+                self.seq_score = bnb.nn.Linear8bit(
+                    self.backbone.config.hidden_size,
+                    self.num_seq_labels,
+                    bias=False,
+                    has_fp16_weights=False,
+                    threshold=quantization_config.llm_int8_threshold,
+                )
+            else:
+                self.seq_score = nn.Linear(
+                    self.backbone.config.hidden_size, 
+                    self.num_seq_labels, 
+                    bias=False,
+                    ).to(model_dtype)
 
         if self.num_tok_labels is not None:
             if getattr(self.backbone.config, "classifier_dropout", None) is not None:
@@ -158,8 +178,21 @@ class TokenLogitsToSequenceModel(nn.Module):
             else:
                 classifier_dropout = 0.1
             self.tok_dropout = nn.Dropout(classifier_dropout)
-            self.tok_score = nn.Linear(self.backbone.config.hidden_size, 
-                                       self.num_tok_labels)
+
+            if quantization_config is not None:
+                # Use 8-bit linear for quantized models
+                self.tok_score = bnb.nn.Linear8bitLt(
+                    self.backbone.config.hidden_size,
+                    self.num_tok_labels,
+                    has_fp16_weights=False,
+                    threshold=quantization_config.llm_int8_threshold
+                )
+            else:
+                # Use regular linear with matching dtype
+                self.tok_score = nn.Linear(
+                    self.backbone.config.hidden_size, 
+                    self.num_tok_labels
+                ).to(model_dtype)
         
     def get_logits(self, input_ids: torch.Tensor, 
                    attention_mask: torch.Tensor,
