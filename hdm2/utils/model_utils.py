@@ -249,7 +249,6 @@ def _detect_hallucinations(prompt, context, response,
                          use_truncated_context=False, 
                          debug=False,
                          is_include_spans = False,
-                         return_json=False
                          ):
     """
     Detect hallucinations using token-level and sentence-level classifiers.
@@ -435,11 +434,6 @@ def _detect_hallucinations(prompt, context, response,
         include_word=is_include_spans
     )
     result["high_scoring_words"] = high_scoring_words
-    
-    # Return as JSON if requested
-    if return_json:
-        import json
-        return json.dumps(result)
     
     return result
 
