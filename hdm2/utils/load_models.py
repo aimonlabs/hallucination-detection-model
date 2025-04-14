@@ -1,6 +1,7 @@
 import json
 import os
 import torch
+import logging
 from transformers import AutoTokenizer, AutoModel
 from peft import PeftModel, PeftConfig
 from hdm2.models.context_knowledge import TokenLogitsToSequenceModel
@@ -10,16 +11,27 @@ from hdm2.models.common_knowledge import CKClassifier
 from safetensors.torch import load_file
 from transformers import BitsAndBytesConfig
 
-def load_model_components(model_components_path=None, 
-                         use_hf=True, repo_id=None,
-                         is_load_in_8bit=False,
-                         quantization_config=None,
-                         ):
+def load_model_components(
+    repo_id=None,
+    model_components_path=None,
+    load_in_8bit=False,
+    quantization_config=None,
+):
     """
-    Load the saved model components from local path or Hugging Face.
+    Load the saved model components from Hugging Face or local path.
+    
+    Args:
+        repo_id: HuggingFace repository ID (required if model_components_path is None)
+        model_components_path: Path to local model components (if specified, load locally)
+        load_in_8bit: Whether to load model in 8-bit precision
+        quantization_config: Optional custom quantization configuration
     """
     
-    if use_hf:
+    if model_components_path is None:
+        if repo_id is None:
+            raise ValueError("Either repo_id or model_components_path must be provided")
+            
+        # Load from HuggingFace
         # Create a temporary directory to store downloaded files
         temp_dir = tempfile.mkdtemp()
         
@@ -59,6 +71,9 @@ def load_model_components(model_components_path=None,
         tok_score_path = get_file("tok_score.pt")
         seq_score_path = get_file("seq_score.pt")
     else:
+        # Load from local path
+        logging.info(f"Loading model components from local path: {model_components_path}")
+        
         # Use local paths
         with open(os.path.join(model_components_path, "model_config.json"), "r") as f:
             model_config = json.load(f)
@@ -75,15 +90,13 @@ def load_model_components(model_components_path=None,
     # 3. Initialize tokenizer
     tokenizer = AutoTokenizer.from_pretrained(base_model_name)
     
-   # Add before initializing the model
-    if is_load_in_8bit:
+    # 4. Initialize model with or without quantization
+    if load_in_8bit:
         if quantization_config is None:
-            # Setup quantization configuration
+            # Setup default quantization configuration
             quantization_config = BitsAndBytesConfig(
                 load_in_8bit=True,
                 llm_int8_threshold=6.0,
-                #llm_int8_skip_modules=[ 'tok_score', 
-                #                       'seq_score']
             )
        
         # Initialize model with quantization
@@ -95,7 +108,7 @@ def load_model_components(model_components_path=None,
             quantization_config=quantization_config
         )
     else:
-       # Original model initialization
+        # Standard model initialization
         model = TokenLogitsToSequenceModel(
             model_name=base_model_name,
             num_token_labels=num_token_labels,
@@ -144,26 +157,48 @@ def load_ck_checkpoint(model, checkpoint_path):
     return model
 
 def load_hallucination_detection_model(
-    model_components_path='../models/token_seq_model/model_components/',
-    ck_classifier_path='ck_classifier_op_2/checkpoint-4802/',
-    use_hf=False,
     repo_id=None,
+    model_components_path=None,
+    ck_classifier_path=None,
     device='cuda',
-    is_load_in_8bit=False,
+    load_in_8bit=False,
     quantization_config=None,
 ):
-    """Load all components of the hallucination detection system."""
+    """
+    Load all components of the hallucination detection system.
+    
+    Args:
+        repo_id: HuggingFace repository ID (required if loading from HF)
+        model_components_path: Path to local model components (if specified, load locally)
+        ck_classifier_path: Path to local CK classifier (required if loading locally)
+        device: Device to load model on ('cuda' or 'cpu')
+        load_in_8bit: Whether to load model in 8-bit precision
+        quantization_config: Optional custom quantization configuration
+    """
+    # Determine loading method and validate parameters
+    loading_from_local = model_components_path is not None
+    
+    if loading_from_local:
+        if ck_classifier_path is None:
+            # Set default path for CK classifier when loading locally
+            ck_classifier_path = 'ck_classifier_op_2/checkpoint-4802/'
+            logging.info(f"Using default CK classifier path: {ck_classifier_path}")
+    else:
+        # Loading from HF
+        if repo_id is None:
+            raise ValueError("repo_id must be provided when loading from HuggingFace")
+    
     # Load token model and tokenizer
     token_model, tokenizer = load_model_components(
-        model_components_path=model_components_path,
-        use_hf=use_hf,
         repo_id=repo_id,
-        is_load_in_8bit=is_load_in_8bit,
+        model_components_path=model_components_path,
+        load_in_8bit=load_in_8bit,
         quantization_config=quantization_config,
     )
     
     # Load CK classifier
-    if use_hf:
+    if not loading_from_local:
+        # Load from HuggingFace
         import tempfile
         from huggingface_hub import hf_hub_download
         
@@ -177,19 +212,17 @@ def load_hallucination_detection_model(
             local_dir=temp_dir
         )
         
-        # Load classifier with safetensors
+        # Load classifier
+        ck_classifier = CKClassifier(hidden_size=2048, num_labels=2).to(device)
         try:
-            from safetensors.torch import load_file
-            ck_classifier = CKClassifier(hidden_size=2048, num_labels=2).to(device)
             ck_weights = load_file(ck_path, device=device)
             ck_classifier.load_state_dict(ck_weights)
-        except ImportError:
-            # Fallback if safetensors isn't available
-            import torch
-            ck_classifier = CKClassifier(hidden_size=2048, num_labels=2).to(device)
+        except Exception as e:
+            # Fallback if loading with safetensors fails
             ck_classifier.load_state_dict(torch.load(ck_path, map_location=device))
     else:
-        # Use local path
+        # Load from local path
+        logging.info(f"Loading CK classifier from local path: {ck_classifier_path}")
         ck_classifier = CKClassifier(hidden_size=2048, num_labels=2).to(device)
         ck_classifier = load_ck_checkpoint(ck_classifier, ck_classifier_path)
     
