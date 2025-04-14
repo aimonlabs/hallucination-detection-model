@@ -10,7 +10,7 @@ class HallucinationDetectionModel:
     """
     
     def __init__(self, 
-                repo_id=None, 
+                repo_id='AimonLabs/hallucination-detection-model', 
                 model_components_path=None, 
                 ck_classifier_path=None,
                 device=None,
