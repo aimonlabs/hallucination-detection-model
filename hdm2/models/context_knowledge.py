@@ -156,11 +156,10 @@ class TokenLogitsToSequenceModel(nn.Module):
         
         if self.num_seq_labels is not None:
             if quantization_config is not None:
-                self.seq_score = bnb.nn.Linear8bit(
+                self.seq_score = bnb.nn.Linear8bitLt(
                     self.backbone.config.hidden_size,
                     self.num_seq_labels,
                     bias=False,
-                    has_fp16_weights=False,
                     threshold=quantization_config.llm_int8_threshold,
                 )
             else:
@@ -184,7 +183,6 @@ class TokenLogitsToSequenceModel(nn.Module):
                 self.tok_score = bnb.nn.Linear8bitLt(
                     self.backbone.config.hidden_size,
                     self.num_tok_labels,
-                    has_fp16_weights=False,
                     threshold=quantization_config.llm_int8_threshold
                 )
             else:
