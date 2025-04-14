@@ -240,7 +240,7 @@ def find_candidate_sentences(sentences_data, token_scores, threshold):
     
     return candidate_indices
 
-def detect_hallucinations(prompt, context, response, 
+def _detect_hallucinations(prompt, context, response, 
                          token_model, ck_classifier, 
                          tokenizer,
                          ck_layer_ix = 25,
