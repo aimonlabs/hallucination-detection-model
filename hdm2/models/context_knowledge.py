@@ -155,19 +155,11 @@ class TokenLogitsToSequenceModel(nn.Module):
         model_dtype = next(self.backbone.parameters()).dtype
         
         if self.num_seq_labels is not None:
-            if quantization_config is not None:
-                self.seq_score = bnb.nn.Linear8bitLt(
-                    self.backbone.config.hidden_size,
-                    self.num_seq_labels,
-                    bias=False,
-                    threshold=quantization_config.llm_int8_threshold,
-                )
-            else:
-                self.seq_score = nn.Linear(
-                    self.backbone.config.hidden_size, 
-                    self.num_seq_labels, 
-                    bias=False,
-                    ).to(model_dtype)
+            self.seq_score = nn.Linear(
+                self.backbone.config.hidden_size, 
+                self.num_seq_labels, 
+                bias=False,
+                ).to(model_dtype)
 
         if self.num_tok_labels is not None:
             if getattr(self.backbone.config, "classifier_dropout", None) is not None:
@@ -178,19 +170,10 @@ class TokenLogitsToSequenceModel(nn.Module):
                 classifier_dropout = 0.1
             self.tok_dropout = nn.Dropout(classifier_dropout)
 
-            if quantization_config is not None:
-                # Use 8-bit linear for quantized models
-                self.tok_score = bnb.nn.Linear8bitLt(
-                    self.backbone.config.hidden_size,
-                    self.num_tok_labels,
-                    threshold=quantization_config.llm_int8_threshold
-                )
-            else:
-                # Use regular linear with matching dtype
-                self.tok_score = nn.Linear(
-                    self.backbone.config.hidden_size, 
-                    self.num_tok_labels
-                ).to(model_dtype)
+            self.tok_score = nn.Linear(
+                self.backbone.config.hidden_size, 
+                self.num_tok_labels
+            ).to(model_dtype)
         
     def get_logits(self, input_ids: torch.Tensor, 
                    attention_mask: torch.Tensor,
