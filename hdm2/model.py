@@ -30,6 +30,7 @@ class HallucinationDetectionModel:
         # Download NLTK data
         try:
             nltk.download('punkt')
+            nltk.download('punkt_tab')
         except Exception as e:
             logging.warning(f"Failed to download NLTK punkt: {e}")
         
