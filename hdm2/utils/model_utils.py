@@ -245,6 +245,7 @@ def _detect_hallucinations(prompt, context, response,
                          tokenizer,
                          ck_layer_ix = 25,
                          token_threshold=0.5, 
+                         ck_threshold=0.9,
                          use_last_tokens=False, 
                          use_truncated_context=False, 
                          debug=False,
@@ -389,6 +390,12 @@ def _detect_hallucinations(prompt, context, response,
                 use_last_tokens=False,
                 layer_id=ck_layer_ix
             )
+        
+        # Apply CK threshold to override predictions
+        for result in ck_results:
+            # Only consider it a hallucination if the probability exceeds the threshold
+            if result['hallucination_probability'] < ck_threshold:
+                result['prediction'] = 0  # Force non-hallucination if below threshold
         
         # Adjust token scores
         adjusted_scores = adjust_token_scores(
