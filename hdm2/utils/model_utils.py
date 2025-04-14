@@ -248,7 +248,9 @@ def _detect_hallucinations(prompt, context, response,
                          use_last_tokens=False, 
                          use_truncated_context=False, 
                          debug=False,
-                         is_include_spans = False):
+                         is_include_spans = False,
+                         return_json=False
+                         ):
     """
     Detect hallucinations using token-level and sentence-level classifiers.
     
@@ -265,7 +267,8 @@ def _detect_hallucinations(prompt, context, response,
         use_truncated_context: Whether to use context+truncated_response for each sentence
         debug: Enable debug output
         is_include_spans: Whether to include word spans in results
-        
+        return_json: Whether to return result as JSON string
+
     Returns:
         Result dictionary with hallucination detection information
     """
@@ -344,6 +347,8 @@ def _detect_hallucinations(prompt, context, response,
             tokens["input_ids"][0][prompt_len:]
         )
     
+    adjusted_hallucination_severity = float(seq_probs[1])
+
     if candidate_indices:
         if use_truncated_context:
             # Approach 3: Use context + truncated response for each sentence
@@ -393,9 +398,18 @@ def _detect_hallucinations(prompt, context, response,
             candidate_indices,
             ck_results
         )
+
+        # Calculate adjusted hallucination severity
+        all_non_hallucinated = all(result['prediction'] == 0 for result in ck_results)
+        if all_non_hallucinated and ck_results:
+            # Calculate average hallucination probability from CK results
+            avg_prob = sum(result['hallucination_probability'] for result in ck_results) / len(ck_results)
+            adjusted_hallucination_severity = float(avg_prob)
     else:
         adjusted_scores = token_scores
         ck_results = []
+        
+
     
     # Create result with all requested information
     result = {
@@ -407,7 +421,8 @@ def _detect_hallucinations(prompt, context, response,
         "candidate_sentence_stats": candidate_sentence_stats,  # New: sentence stats with IDs and scores
         "seq_logits": op['seq_logits'][0].cpu().tolist(),  # Sequence logits
         "seq_probs": seq_probs.tolist(),  # Softmaxed sequence probabilities
-        "hallucination_severity": float(seq_probs[1])  # Hallucination severity from seq score
+        "hallucination_severity": float(seq_probs[1]),  # Hallucination severity from seq score
+        "adjusted_hallucination_severity": adjusted_hallucination_severity  # New field
     }
     
     # Add high-scoring words with boundaries
@@ -420,6 +435,11 @@ def _detect_hallucinations(prompt, context, response,
         include_word=is_include_spans
     )
     result["high_scoring_words"] = high_scoring_words
+    
+    # Return as JSON if requested
+    if return_json:
+        import json
+        return json.dumps(result)
     
     return result
 
