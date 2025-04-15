@@ -54,9 +54,10 @@ class HallucinationDetectionModel:
     
     def apply(self, prompt, context, response, 
              token_threshold=0.5,
+             ck_threshold=0.7,
              ck_layer_ix=25,
              use_last_tokens=False,
-             use_truncated_context=False,
+             use_truncated_context=True,
              debug=False,
              is_include_spans=True):
         """
@@ -76,6 +77,7 @@ class HallucinationDetectionModel:
         Returns:
             Dictionary containing hallucination detection results
         """
+        
         return _detect_hallucinations(
             prompt=prompt,
             context=context,
@@ -85,6 +87,7 @@ class HallucinationDetectionModel:
             tokenizer=self.tokenizer,
             ck_layer_ix=ck_layer_ix,
             token_threshold=token_threshold,
+            ck_threshold=ck_threshold,
             use_last_tokens=use_last_tokens,
             use_truncated_context=use_truncated_context,
             debug=debug,
