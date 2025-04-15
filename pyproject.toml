@@ -2,9 +2,9 @@
 name = "hdm2"
 version = "0.1.0"
 authors = [
-  { name="Bibek Paudel", email="paudel.bibek@gmail.com" },
+  { name="Bibek Paudel", email="bibek@aimon.ai" },
 ]
-description = "HDM2: Hallucination Detection Model by AimonLabs."
+description = "HDM2: Hallucination Detection Model by AIMon Labs."
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
@@ -16,7 +16,7 @@ dependencies = [
   "transformers",
   "peft",
   "nltk",
-  "numpy",
+  "numpy<2.0.0,>=1.23.0",
   "huggingface-hub",
   "safetensors",
   "tqdm",

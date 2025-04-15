@@ -15,7 +15,7 @@ AIMon's Hallucination Detection Model-2 (HDM-2) is a powerful tool for identifyi
 ### From PyPI (Recommended)
 
 ```bash
-pip install aimon-hdm2
+pip install hdm2
 ```
 
 ### From Source
@@ -29,7 +29,7 @@ pip install -e .
 For GPU acceleration (recommended for production use):
 
 ```bash
-pip install aimon-hdm2[gpu]
+pip install hdm2[gpu]
 ```
 
 ## Quick Start
