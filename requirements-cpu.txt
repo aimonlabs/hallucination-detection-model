@@ -1,0 +1,8 @@
+huggingface_hub==0.29.2
+nltk==3.9.1
+numpy==2.2.4
+peft==0.14.0
+safetensors==0.5.3
+transformers==4.49.0
+torch==2.6.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
+# bitsandbytes is excluded as it's primarily for GPU acceleration 

@@ -1,8 +1,13 @@
-bitsandbytes==0.45.5
 huggingface_hub==0.29.2
 nltk==3.9.1
 numpy==2.2.4
 peft==0.14.0
 safetensors==0.5.3
-torch==2.6.0
 transformers==4.49.0
+
+# GPU dependencies - install with: pip install -r requirements.txt
+torch==2.6.0
+bitsandbytes==0.45.5
+
+# CPU-only dependencies - install with: pip install -r requirements.txt -f https://download.pytorch.org/whl/cpu/torch_stable.html
+# torch==2.6.0+cpu
