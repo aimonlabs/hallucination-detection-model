@@ -91,5 +91,6 @@ class HallucinationDetectionModel:
             use_last_tokens=use_last_tokens,
             use_truncated_context=use_truncated_context,
             debug=debug,
-            is_include_spans=is_include_spans
+            is_include_spans=is_include_spans,
+            device=self.device
         ) 
