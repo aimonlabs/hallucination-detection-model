@@ -9,7 +9,7 @@ AIMon's Hallucination Detection Model-2 (HDM-2) is a powerful tool for identifyi
 ## Features
 
 <p align="center">
-  <img src="images/taxonomy.png" alt="LLM Response Taxonomy">
+  <img src="images/taxonomy.png" width=400" alt="LLM Response Taxonomy">
 </p>
 
 As shown in the figure above, an LLM response can be broken down into context based generation, common knowledge based generation, enterprise knowledge based generation and innocuous statments. 
