@@ -16,7 +16,7 @@ dependencies = [
   "transformers",
   "peft",
   "nltk",
-  "numpy<2.0.0,>=1.23.0",
+  "numpy",
   "huggingface-hub",
   "safetensors",
   "tqdm",
