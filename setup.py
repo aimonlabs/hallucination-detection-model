@@ -13,7 +13,7 @@ def check_gpu_available():
     except FileNotFoundError:
         return False
 
-# Base dependencies required for both CPU and GPU
+# Base dependencies required regardless of hardware
 base_dependencies = [
     "huggingface_hub==0.29.2",
     "nltk==3.9.1",
@@ -23,21 +23,42 @@ base_dependencies = [
     "transformers==4.49.0",
 ]
 
-# GPU-specific dependencies
-gpu_dependencies = [
-    "torch==2.6.0",
-    "bitsandbytes==0.45.5",
-]
+# Parse command line args to see if --cpu is specified
+force_cpu = "--cpu" in sys.argv
+if "--cpu" in sys.argv:
+    sys.argv.remove("--cpu")
 
-# Determine which dependencies to use
-if check_gpu_available():
-    print("GPU detected. Installing with GPU support.")
-    install_requires = base_dependencies + gpu_dependencies
+if force_cpu or not check_gpu_available():
+    print("Installing CPU-only version (no CUDA dependencies).")
+    
+    # For CPU-only setup, we don't include the torch requirement in setup.py
+    # Instead we'll install it separately with the correct URL
+    
+    # Create a script that will run during setup
+    with open("install_cpu_torch.py", "w") as f:
+        f.write("""
+import subprocess
+import sys
+
+# Install CPU version of PyTorch first
+subprocess.check_call([
+    sys.executable, "-m", "pip", "install", 
+    "torch==2.6.0+cpu", 
+    "--extra-index-url", "https://download.pytorch.org/whl/cpu"
+])
+""")
+    
+    # Execute the script
+    subprocess.check_call([sys.executable, "install_cpu_torch.py"])
+    
+    # Remove bitsandbytes from the dependencies as it's GPU-specific
+    install_requires = base_dependencies
 else:
-    print("No GPU detected. Installing CPU-only version.")
-    # Set environment variable for pip to use the CPU torch index
-    os.environ['PIP_EXTRA_INDEX_URL'] = 'https://download.pytorch.org/whl/cpu'
-    install_requires = base_dependencies + ["torch==2.6.0+cpu"]
+    print("GPU detected. Installing with GPU support.")
+    install_requires = base_dependencies + [
+        "torch==2.6.0",
+        "bitsandbytes==0.45.5",
+    ]
 
 setup(
     name="hallucination-detection-model",
