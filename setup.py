@@ -25,7 +25,7 @@ setup(
     version="0.1.0",
     author="Bibek Paudel",
     author_email="bibek@aimon.ai",
-    description="HDM2: Hallucination Detection Model by AimonLabs",
+    description="A tool for detecting and quantifying hallucinations in LLM responses through context and common knowledge verification",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/aimonlabs/hallucination-detection-model",
