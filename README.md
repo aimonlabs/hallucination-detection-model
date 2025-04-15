@@ -41,9 +41,13 @@ from hdm2 import HallucinationDetectionModel
 hdm = HallucinationDetectionModel()
 
 # Prepare your inputs
-prompt = "Explain quantum computing"
-context = "Quantum computing is a type of computing that uses quantum phenomena such as superposition and entanglement. A quantum computer maintains a sequence of qubits."
-response = "Quantum computing is a revolutionary field that leverages the principles of quantum mechanics to perform computations. Unlike classical computing which uses bits, quantum computing uses quantum bits or qubits. These qubits can exist in multiple states simultaneously due to a phenomenon called superposition. Additionally, quantum entanglement allows qubits to be intrinsically connected regardless of distance. Quantum computers are particularly effective for solving complex problems like factoring large numbers and simulating quantum systems. They are also good at optimization problems and machine learning tasks."
+prompt = "Describe what penguins are"
+context = """
+Penguins are flightless aquatic birds that live almost exclusively in the Southern Hemisphere. They are highly adapted for life in the water, with a countershaded dark and white plumage.
+"""
+response = """
+Penguins are flightless aquatic birds that have evolved to thrive in cold environments, primarily in the Southern Hemisphere. Their bodies are perfectly adapted for marine life - they have wings that have evolved into flippers for swimming, dense waterproof feathers for insulation, and a countershaded dark and white plumage that provides camouflage while swimming. The black back and white front coloration helps them blend in when viewed from above or below in the water. Penguins feed primarily on fish, squid, and krill, which they catch while swimming underwater. They are highly social birds that nest in colonies, sometimes containing thousands of individuals. Of the 18 penguin species, the Emperor penguin is the largest, standing about 1.1 meters tall, while the Little Blue penguin is the smallest at around 40 centimeters.
+"""
 
 # Detect hallucinations
 results = hdm.apply(prompt, context, response)
