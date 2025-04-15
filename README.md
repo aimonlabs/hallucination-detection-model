@@ -118,10 +118,9 @@ Please refer to the paper (linked below) for details on the dataset and the mode
 
 Note that this dataset is meant only for benchmarking, and it should not be used for training or hyperparameter-tuning.
 
-Model weights on [HF here](https://huggingface.co/AimonLabs/hallucination-detection-model/)
+Model weights on HF [here](https://huggingface.co/AimonLabs/hallucination-detection-model/).
 
-HDMBench evaluation split on [HF here](https://huggingface.co/datasets/AimonLabs/HDM-Bench)
-
+HDMBench evaluation split on HF [here](https://huggingface.co/datasets/AimonLabs/HDM-Bench).
 
 ## Contributing
 
@@ -137,7 +136,7 @@ License URL: https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1
 
 ## Citation
 
-The full-text of our paper 📃 is available on arXiv [here].(https://arxiv.org/abs/2504.07069)
+The full-text of our paper 📃 is available on arXiv [here](https://arxiv.org/abs/2504.07069).
 
 If you use HDM-2 in your research, please cite:
 
