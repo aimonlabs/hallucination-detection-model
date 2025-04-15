@@ -1,5 +1,7 @@
 # Hallucination Detection Model (HDM-2)
 
+![AIMon Logo](images/aimon_logo.png "AIMon Logo")
+
 AIMon's Hallucination Detection Model-2 (HDM-2) is a powerful tool for identifying hallucinations in large language model (LLM) responses. This repository contains the inference code for HDM-2, allowing developers to integrate hallucination detection into their AI pipelines.
 
 ## Features
