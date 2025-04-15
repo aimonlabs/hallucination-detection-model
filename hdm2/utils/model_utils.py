@@ -250,6 +250,7 @@ def _detect_hallucinations(prompt, context, response,
                          use_truncated_context=False, 
                          debug=False,
                          is_include_spans = False,
+                         device='cuda',
                          ):
     """
     Detect hallucinations using token-level and sentence-level classifiers.
@@ -363,7 +364,8 @@ def _detect_hallucinations(prompt, context, response,
                 response=response,
                 sentences=sentences_data["sentences"],
                 candidate_indices=candidate_indices,
-                layer_id=ck_layer_ix
+                layer_id=ck_layer_ix,
+                device=device,
             )
         elif use_last_tokens:
             # Approach 2: Use last token embeddings from full context+response
@@ -378,7 +380,8 @@ def _detect_hallucinations(prompt, context, response,
                 use_last_tokens=True,
                 tokenized_inputs=tokens,
                 sentences=candidate_sentences,
-                layer_id=ck_layer_ix
+                layer_id=ck_layer_ix,
+                device=device,
             )
         else:
             # Approach 1: Original - classify individual sentences
@@ -388,7 +391,8 @@ def _detect_hallucinations(prompt, context, response,
                 tokenizer,
                 candidate_sentences,
                 use_last_tokens=False,
-                layer_id=ck_layer_ix
+                layer_id=ck_layer_ix,
+                device=device,
             )
         
         # Apply CK threshold to override predictions

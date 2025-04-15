@@ -17,6 +17,7 @@ def load_model_components(
     load_in_8bit=False,
     quantization_config=None,
     dtype=torch.bfloat16,
+    device='cuda',
 ):
     """
     Load the saved model components from Hugging Face or local path.
@@ -127,7 +128,9 @@ def load_model_components(
     )
     
     # 6. Load classifier components
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if device is None:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = torch.device(device)
     model_dtype = next(model.parameters()).dtype
 
     # Load classifier weights and convert to right dtype
@@ -199,6 +202,7 @@ def load_hallucination_detection_model(
         load_in_8bit=load_in_8bit,
         quantization_config=quantization_config,
         dtype=dtype,
+        device=device,
     )
     
     # Load classifier
