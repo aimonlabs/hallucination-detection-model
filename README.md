@@ -54,7 +54,7 @@ results = hdm.apply(prompt, context, response)
 
 # Check results
 if results['hallucination_detected']:
-    print(f"Hallucination detected with severity: {results['hallucination_severity']:.4f}")
+    print(f"Hallucination detected with severity: {results['adjusted_hallucination_severity']:.4f}")
     
     # Print hallucinated sentences
     print("\nHallucinated sentences:")
@@ -103,7 +103,8 @@ hdm = HallucinationDetectionModel(
 The `apply()` method returns a dictionary with the following keys:
 
 - `hallucination_detected` (bool): Whether any hallucination was detected
-- `hallucination_severity` (float): Overall hallucination severity score (0-1)
+- `hallucination_severity` (float): Overall hallucination severity score (0.0-1.0)
+- `adjusted_hallucination_severity`(float): Adjusted hallucination severity score (0.0-1.0) that incorporates the results from the common knowledge model. It's value is 0.0 if all candidate sentences are common knowledge.
 - `ck_results` (list): Per-sentence results with hallucination probabilities
 - `high_scoring_words` (list): Words/spans with high hallucination scores
 - `candidate_sentences` (list): Sentences with potential hallucinations
@@ -114,7 +115,11 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the terms of the license included in the repository.
+This project is licensed under the terms of the license included here:
+
+CC BY-NC-SA 4.0
+
+License URL: https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1
 
 ## Citation
 
