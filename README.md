@@ -109,6 +109,18 @@ The `apply()` method returns a dictionary with the following keys:
 - `high_scoring_words` (list): Words/spans with high hallucination scores
 - `candidate_sentences` (list): Sentences with potential hallucinations
 
+## Model Weights and Evaluation Dataset on HuggingFace 🤗
+
+As a service to the community, we are releasing the weights for our 3B parameter model, along with the evaluation split of our dataset HDMBench.
+Please refer to the paper (linked below) for details on the dataset and the model architecture.
+
+Note that this dataset is meant only for benchmarking, and it should not be used for training or hyperparameter-tuning.
+
+Model weights on HF [here].(https://huggingface.co/AimonLabs/hallucination-detection-model/)
+
+HDMBench evaluation split on HF [here].(https://huggingface.co/datasets/AimonLabs/HDM-Bench)
+
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -122,6 +134,8 @@ CC BY-NC-SA 4.0
 License URL: https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1
 
 ## Citation
+
+The full-text of our paper 📃 is available on arXiv [here].(https://arxiv.org/abs/2504.07069)
 
 If you use HDM-2 in your research, please cite:
 
