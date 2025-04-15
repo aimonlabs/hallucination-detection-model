@@ -84,6 +84,7 @@ class TokenLogitsToSequenceModel(nn.Module):
                  peft_config=None,
                  quantization_config=None,
                  dtype=torch.bfloat16,
+                 device='cuda',
                  ):
         super(TokenLogitsToSequenceModel, self).__init__()
 
@@ -123,7 +124,9 @@ class TokenLogitsToSequenceModel(nn.Module):
         if quantization_config is not None:
             model_kwargs["quantization_config"] = quantization_config
 
-        model_kwargs["device_map"] = "auto"
+        if device is None:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+        model_kwargs["device_map"] = "auto" if device == 'cuda' else None
                     
         # Load the model with all appropriate parameters
         self.backbone = AutoModel.from_pretrained(model_name, 

@@ -112,6 +112,7 @@ def load_model_components(
         is_apply_peft=False,
         quantization_config=quantization_config,
         dtype=dtype,
+        device=device,
     )
 
     # 5. Load LoRA adapter
