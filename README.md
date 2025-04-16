@@ -142,7 +142,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-Please reach out to us for Enterprise/Commercial licensing. Contact us at info@aimon.ai.
+Please reach out to us for enterprise and commercial licensing. Contact us at info@aimon.ai.
 
 
 This project is licensed under the terms of the license included here
