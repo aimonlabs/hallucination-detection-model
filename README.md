@@ -142,6 +142,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
+Please reach out to us for Enterprise/Commercial licensing. Contact us at info@aimon.ai.
+
 [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
 
 This project is licensed under the terms of the license included here
