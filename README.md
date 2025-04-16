@@ -7,7 +7,9 @@
 <table>
   <tr>
     <td><strong>Paper:</strong></td>
-    <td><a href="https://arxiv.org/abs/2504.07069"><img src="https://img.shields.io/badge/arXiv-2504.07069-b31b1b.svg" alt="arXiv Badge" /></a> <em>HalluciNot: Hallucination Detection Through Context and Common Knowledge Verification.</em></td>
+    <td><a href="https://arxiv.org/abs/2504.07069"><img src="https://img.shields.io/badge/arXiv-2504.07069-b31b1b.svg" alt="arXiv Badge" /></a>
+      <br>
+      <em>HalluciNot: Hallucination Detection Through Context and Common Knowledge Verification.</em></td>
   </tr>
   <tr>
     <td><strong>Notebook:</strong></td>
