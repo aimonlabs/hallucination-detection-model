@@ -3,10 +3,48 @@
 <p align="center">
   <img src="images/aimon_logo.png" alt="AIMon Logo">
 </p>
- 
+
+<table>
+  <tr>
+    <td><strong>Paper:</strong></td>
+    <td><a href="https://arxiv.org/abs/2504.07069"><img src="https://img.shields.io/badge/arXiv-2504.07069-b31b1b.svg" alt="arXiv Badge" /></a> <em>HalluciNot: Hallucination Detection Through Context and Common Knowledge Verification.</em></td>
+  </tr>
+  <tr>
+    <td><strong>Notebook:</strong></td>
+    <td><a href="https://colab.research.google.com/drive/1HclyB06t-wZVIxuK6AlyifRaf77vO5Yz?usp=sharing"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Colab Badge" /></a></td>
+  </tr>
+  <tr>
+    <td><strong>HDM-2-3B Model:</strong></td>
+    <td><a href="https://huggingface.co/AimonLabs/hallucination-detection-model"><img src="https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md-dark.svg" alt="HF Model Badge" /></a></td>
+  </tr>
+  <tr>
+    <td><strong>HDM-Bench Dataset:</strong></td>
+    <td><a href="https://huggingface.co/datasets/AimonLabs/HDM-Bench"><img src="https://huggingface.co/datasets/huggingface/badges/resolve/main/dataset-on-hf-md-dark.svg" alt="HF Dataset Badge" /></a></td>
+  </tr>
+</table>
+
+<!--
 **Paper:** *HalluciNot: Hallucination Detection Through Context and Common Knowledge Verification.* [![Read full-text on arXiv](https://img.shields.io/badge/arXiv-2504.07069-b31b1b.svg)](https://arxiv.org/abs/2504.07069) 
 
 **Notebook:** [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1HclyB06t-wZVIxuK6AlyifRaf77vO5Yz#scrollTo=UVvBvBMWrDiv)
+
+**Paper:** 
+[![Read full-text on arXiv](https://img.shields.io/badge/arXiv-2504.07069-b31b1b.svg)](https://arxiv.org/abs/2504.07069)
+
+*HalluciNot: Hallucination Detection Through Context and Common Knowledge Verification.*
+
+**Notebook:** [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1HclyB06t-wZVIxuK6AlyifRaf77vO5Yz?usp=sharing)
+
+**GitHub Repository:** 
+[![Repo](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white
+)](https://github.com/aimonlabs/hallucination-detection-model)
+
+**HDM-2-3B Model:**
+[![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md-dark.svg)](https://huggingface.co/AimonLabs/hallucination-detection-model)
+
+**HDM-Bench Dataset:**
+[![Dataset on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/dataset-on-hf-md-dark.svg)](https\://huggingface.co/datasets/AimonLabs/HDM-Bench)
+-->
 
 AIMon's Hallucination Detection Model-2 (HDM-2) is a powerful tool for identifying hallucinations in large language model (LLM) responses. This repository contains the inference code for HDM-2, allowing developers to integrate hallucination detection into their AI pipelines.
 
