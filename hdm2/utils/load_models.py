@@ -46,7 +46,7 @@ def load_model_components(
             )
         
         # 1. Load model configuration
-        model_config_path = get_file("model_config.json")
+        model_config_path = get_file("config.json")
         with open(model_config_path, "r") as f:
             model_config = json.load(f)
         
@@ -77,7 +77,7 @@ def load_model_components(
         logging.info(f"Loading model components from local path: {model_components_path}")
         
         # Use local paths
-        with open(os.path.join(model_components_path, "model_config.json"), "r") as f:
+        with open(os.path.join(model_components_path, "config.json"), "r") as f:
             model_config = json.load(f)
         
         adapter_path = os.path.join(model_components_path, "lora_adapter")
