@@ -350,9 +350,15 @@ def _detect_hallucinations(prompt, context, response,
     
     adjusted_hallucination_severity = float(seq_probs[1])
 
+    def remove_newlines(text):
+        return text.replace('\r\n', '').replace('\r', '').replace('\n', '')
+    
     if candidate_indices:
         if use_truncated_context:
-            combined_context_for_ck = prompt.replace("\n", " ") + " " + context.replace("\n", " ")
+            prompt_ = remove_newlines(prompt)
+            context_ = remove_newlines(context)
+            combined_context_for_ck = prompt_ + " " + context_
+            #combined_context_for_ck = prompt.replace("\n", " ") + " " + context.replace("\n", " ")
 
             # Approach 3: Use context + truncated response for each sentence
             ck_results = classify_sentences(
