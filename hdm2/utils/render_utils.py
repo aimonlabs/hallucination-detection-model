@@ -154,8 +154,8 @@ def display_hallucination_results_words(result, show_scores=True, color_scheme="
             sentence_to_class[sentence_result['text']] = sentence_result['prediction']
         
         # For each high-scoring word, find which sentence it belongs to
-        for i, (span, score, word) in enumerate(high_scoring_words):
-            start_pos = span[0]
+        for i, item in enumerate(high_scoring_words):
+            start_pos = item[0][0]
             
             # Find which sentence contains this word
             for sentence in result['candidate_sentences']:
