@@ -251,6 +251,8 @@ def _detect_hallucinations(prompt, context, response,
                          debug=False,
                          is_include_spans = False,
                          device='cuda',
+                         return_unadjusted_scores=False,
+                         adjustment_factor=1.0,
                          ):
     """
     Detect hallucinations using token-level and sentence-level classifiers.
@@ -305,6 +307,8 @@ def _detect_hallucinations(prompt, context, response,
     
     # Use original logic for token scores and sequence probabilities
     token_scores = torch.softmax(op['token_logits'][0], axis=1)[prompt_len:, 1].float().cpu().numpy()
+    unadjusted_token_scores = token_scores.copy()
+
     seq_probs = torch.softmax(op['seq_logits'], dim=-1)[0].float().cpu().numpy()
     
     # Extract sentences
@@ -414,7 +418,8 @@ def _detect_hallucinations(prompt, context, response,
             token_scores,
             sentences_data,
             candidate_indices,
-            ck_results
+            ck_results,
+            adjustment_factor=adjustment_factor,
         )
 
         # Calculate adjusted hallucination severity
@@ -426,8 +431,6 @@ def _detect_hallucinations(prompt, context, response,
     else:
         adjusted_scores = token_scores
         ck_results = []
-        
-
     
     # Create result with all requested information
     result = {
@@ -453,6 +456,9 @@ def _detect_hallucinations(prompt, context, response,
         include_word=is_include_spans
     )
     result["high_scoring_words"] = high_scoring_words
+
+    if return_unadjusted_scores:
+        result["token_scores_unadjusted"] = token_scores_unadjusted.tolist()
     
     return result
 

@@ -107,7 +107,12 @@ def get_candidate_sentences_with_stats(sentences_data, candidate_indices, token_
     
     return results
 
-def adjust_token_scores(token_scores, sentences_data, candidate_indices, ck_results):
+def adjust_token_scores(token_scores, 
+                        sentences_data, 
+                        candidate_indices, 
+                        ck_results,
+                        adjustment_factor=1.0,
+                    ):
     """
     Adjust token scores based on classification results.
     
@@ -129,7 +134,9 @@ def adjust_token_scores(token_scores, sentences_data, candidate_indices, ck_resu
             token_indices = sentences_data["token_indices"][candidate_idx]
             
             # Vectorize
-            adjusted_scores[token_indices] = token_scores[token_indices] * non_hall_prob
+            adjusted_factor = non_hall_prob ** adjustment_factor
+            adjusted_scores[token_indices] = token_scores[token_indices] * adjusted_factor    
+            #adjusted_scores[token_indices] = token_scores[token_indices] * non_hall_prob
     
     return adjusted_scores
 
