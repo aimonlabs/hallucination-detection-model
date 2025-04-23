@@ -352,8 +352,8 @@ def _detect_hallucinations(prompt, context, response,
 
     if candidate_indices:
         if use_truncated_context:
-            combined_context_for_ck = combined_context.replace("\n", " ")
-            
+            combined_context_for_ck = prompt.replace("\n", " ") + " " + context.replace("\n", " ")
+
             # Approach 3: Use context + truncated response for each sentence
             ck_results = classify_sentences(
                 token_model,
