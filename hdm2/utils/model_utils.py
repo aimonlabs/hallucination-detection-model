@@ -307,7 +307,7 @@ def _detect_hallucinations(prompt, context, response,
     
     # Use original logic for token scores and sequence probabilities
     token_scores = torch.softmax(op['token_logits'][0], axis=1)[prompt_len:, 1].float().cpu().numpy()
-    unadjusted_token_scores = token_scores.copy()
+    token_scores_unadjusted = token_scores.copy()
 
     seq_probs = torch.softmax(op['seq_logits'], dim=-1)[0].float().cpu().numpy()
     
