@@ -8,7 +8,10 @@ def render_predictions_with_scheme(tokenizer_or_text,
                                    show_scores=True, 
                                    color_scheme="white-red", 
                                    use_spans=True, 
-                                   class_info=None):
+                                   class_info=None,
+                                   base_opacity=0.2,
+                                   opacity_factor=0.4,
+                                   ):
     """
     Render text with highlighted tokens or spans.
     
@@ -105,13 +108,14 @@ def render_predictions_with_scheme(tokenizer_or_text,
             else:
                 colors[label] = f"rgba(255, {255 - int(score * 150)}, {255 - int(score * 150)}, {0.2 + score * 0.6})"
         
+        # In the blue-red section
         elif color_scheme == "blue-red":
-            # Class 0: Blue I
+            # Class 0: Blue
             if entity_class == 0:
-                colors[label] = f"rgba(100, 150, 255, {0.3 + score * 0.5})"
+                colors[label] = f"rgba(150, 180, 255, {base_opacity + score * opacity_factor})"
             # Class 1: Red
             else:
-                colors[label] = f"rgba(255, 100, 100, {0.3 + score * 0.5})"
+                colors[label] = f"rgba(255, 150, 150, {base_opacity + score * opacity_factor})"
         
         elif color_scheme == "green-red":
             # From green (0,255,0) to red (255,0,0)
@@ -138,7 +142,13 @@ def render_predictions_with_scheme(tokenizer_or_text,
     # Render with displacy
     displacy.render(displacy_input, style="ent", manual=True, jupyter=True, options=options)
 
-def display_hallucination_results_words(result, show_scores=True, color_scheme="white-red", separate_classes=False):
+def display_hallucination_results_words(result, 
+                                        show_scores=True, 
+                                        color_scheme="white-red", 
+                                        separate_classes=False,
+                                        base_opacity=0.2,
+                                        opacity_factor=0.4,
+                                        ):
     """
     Display hallucination results using word-level spans from high_scoring_words.
     
@@ -196,7 +206,7 @@ def display_hallucination_results_words(result, show_scores=True, color_scheme="
         show_scores=show_scores, 
         color_scheme=color_scheme, 
         use_spans=True,
-        class_info=word_to_class if separate_classes else None
+        class_info=word_to_class if separate_classes else None,
     )
     
     # Display candidate sentences with updated colors
@@ -209,16 +219,14 @@ def display_hallucination_results_words(result, show_scores=True, color_scheme="
                 confidence = ck_result['hallucination_probability']
                 prediction_class = ck_result['prediction']
                 
-                # Determine color based on class and confidence
                 if separate_classes and prediction_class == 0:
                     # Blue gradient for class 0
-                    bg_color = f"rgba(100, 150, 255, {0.3 + confidence * 0.4})"
+                    bg_color = f"rgba(150, 180, 255, {base_opacity + confidence * opacity_factor})"
                     prediction_label = "Common Knowledge"
                 else:
                     # Red gradient for class 1
-                    bg_color = f"rgba(255, 100, 100, {0.3 + confidence * 0.4})"
+                    bg_color = f"rgba(255, 150, 150, {base_opacity + confidence * opacity_factor})"
                     prediction_label = "Hallucination"
-                    
                 confidence_display = f"{confidence:.4f}"
             else:
                 confidence_display = "N/A"
