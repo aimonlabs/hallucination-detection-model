@@ -146,8 +146,7 @@ def display_hallucination_results_words(result,
                                         show_scores=True, 
                                         color_scheme="white-red", 
                                         separate_classes=False,
-                                        base_opacity=0.2,
-                                        opacity_factor=0.4,
+                                        base_opacity=0.05, opacity_factor=0.7,
                                         ):
     """
     Display hallucination results using word-level spans from high_scoring_words.
