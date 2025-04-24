@@ -148,21 +148,34 @@ def display_hallucination_results_words(result, show_scores=True, color_scheme="
     # Create a mapping from words to sentence classes if separate_classes is True
     word_to_class = {}
     if separate_classes and 'candidate_sentences' in result and 'ck_results' in result:
-        # Find sentence for each word by exact position matching
+        # Get exact positions of each sentence in the response
+        sentence_positions = []
+        current_pos = 0
+        
+        # For each sentence, find its exact position in the response
+        for sentence in result['candidate_sentences']:
+            # Find the sentence starting from the current position to avoid duplicates
+            sent_pos = response_text.find(sentence, current_pos)
+            if sent_pos != -1:
+                sentence_positions.append((sent_pos, sent_pos + len(sentence)))
+                # Update current position to avoid finding the same sentence again
+                current_pos = sent_pos + len(sentence)
+        
+        # Create a mapping from sentence position to its classification
+        sentence_to_class = {}
+        for (start, end), ck_result in zip(sentence_positions, result['ck_results']):
+            sentence_to_class[(start, end)] = ck_result['prediction']
+        
+        # Map each word to its sentence
         for i, item in enumerate(high_scoring_words):
-            span = item[0]
-            start_pos = span[0]
-            end_pos = span[1]
-            word_text = response_text[start_pos:end_pos]
+            word_span = item[0]
+            word_start = word_span[0]
+            word_end = word_span[1]
             
-            for sent_idx, sentence in enumerate(result['candidate_sentences']):
-                sent_pos = response_text.find(sentence)
-                sent_end = sent_pos + len(sentence)
-                
-                # Check if word is FULLY contained within this sentence's boundaries
-                if sent_pos <= start_pos and end_pos <= sent_end:
-                    # Get prediction directly by index to avoid text matching issues
-                    word_to_class[i] = result['ck_results'][sent_idx]['prediction']
+            # Check which sentence contains this word
+            for (sent_start, sent_end), sent_class in sentence_to_class.items():
+                if sent_start <= word_start < sent_end:
+                    word_to_class[i] = sent_class
                     break
     
     # Display title
