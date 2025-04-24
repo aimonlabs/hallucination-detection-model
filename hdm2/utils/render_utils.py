@@ -207,13 +207,16 @@ def display_hallucination_results_words(result,
         color_scheme=color_scheme, 
         use_spans=True,
         class_info=word_to_class if separate_classes else None,
+        base_opacity=base_opacity,
+        opacity_factor=opacity_factor,
     )
     
     # Display candidate sentences with updated colors
     if result['candidate_sentences']:
         display(HTML("<h4>Candidate Sentences</h4>"))
         for i, sentence in enumerate(result['candidate_sentences']):
-            ck_result = next((r for r in result['ck_results'] if r['text'] == sentence), None)
+            #ck_result = next((r for r in result['ck_results'] if r['text'] == sentence), None)
+            ck_result = result['ck_results'][i]
             
             if ck_result:
                 confidence = ck_result['hallucination_probability']
