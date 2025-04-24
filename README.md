@@ -170,11 +170,11 @@ display_hallucination_results_words(
 )
 ```
 
-The color tones indicate the scores (darker color means higher score).
-Words with red background are hallucinations.
-Words with blue background are context-hallucinations but marked as problem-free by the common-knowledge checker.
-Words with white background are problem-free text.
-Finally, all the candidate sentences (sentences that contain context-hallucinations) are shown at the bottom, together with results from the common-knowledge checker.
+- The color tones indicate the scores (darker color means higher score).
+- Words with red background are hallucinations.
+- Words with blue background are context-hallucinations but marked as problem-free by the common-knowledge checker.
+- Words with white background are problem-free text.
+- Finally, all the candidate sentences (sentences that contain context-hallucinations) are shown at the bottom, together with results from the common-knowledge checker.
 
 ![image/png](https://cdn-uploads.huggingface.co/production/uploads/66b686e15ffbd1973ae61d01/raBYWT31RF-90NWA-zOcc.png)
 
