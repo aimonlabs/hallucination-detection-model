@@ -155,10 +155,6 @@ hdm = HallucinationDetectionModel(
 ```
 ### Detection with word-level annotations
 
-Please refer to the [model page on HuggingFace](https://huggingface.co/AimonLabs/hallucination-detection-model) for an example on how to display word-level annotations for inspecting the output of the model.
-
-An example from a different call is shown below.
-
 ```
 from hdm2.utils.render_utils import display_hallucination_results_words
 
@@ -169,6 +165,10 @@ display_hallucination_results_words(
     separate_classes=True, # False if you don't want separate colors for Common Knowledge sentences
 )
 ```
+
+Please refer to the [model page on HuggingFace](https://huggingface.co/AimonLabs/hallucination-detection-model) for an example on how to display word-level annotations for inspecting the output of the model.
+
+An example from a different call is shown below.
 
 - The color tones indicate the scores (darker color means higher score).
 - Words with red background are hallucinations.
