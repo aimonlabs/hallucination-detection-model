@@ -158,7 +158,7 @@ def display_hallucination_results_words(result, show_scores=True, color_scheme="
             pos = response_text.find(sentence, current_pos)
             if pos != -1:
                 sentence_positions.append((pos, pos + len(sentence)))
-                current_pos = pos + 1  # Move past this position to find next occurrence
+                current_pos = pos + len(sentence)  # Move past this position to find next occurrence
         
         # Map each word to its sentence class
         for i, item in enumerate(high_scoring_words):
