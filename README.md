@@ -170,7 +170,7 @@ Please refer to the [model page on HuggingFace](https://huggingface.co/AimonLabs
 
 An example from a different call is shown below.
 
-- The color tones indicate the scores (darker color means higher score).
+- Color tones indicate the scores (darker color means higher score).
 - Words with red background are hallucinations.
 - Words with blue background are context-hallucinations but marked as problem-free by the common-knowledge checker.
 - Words with white background are problem-free text.
