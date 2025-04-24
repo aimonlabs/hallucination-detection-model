@@ -161,14 +161,20 @@ def display_hallucination_results_words(result, show_scores=True, color_scheme="
                 end_pos = start_pos + len(sentence)
                 
                 # Map each token position to this classification
-                for item in high_scoring_words:
-                    token_start, token_end = item[0], item[1]
+                for i, item in enumerate(high_scoring_words):
+                    # Handle different formats
+                    # Position is a tuple/list in the first element
+                    position = item[0]
+                    if isinstance(position, (list, tuple)):
+                        token_start, token_end = position[0], position[1]
+                    else:
+                        # If directly a number, needs different handling
+                        continue  # Skip if can't determine position
                     
                     # Check if token is within this sentence
                     if token_start >= start_pos and token_end <= end_pos:
-                        # Get the token text
-                        token = response_text[token_start:token_end]
-                        word_to_class[token] = classification
+                        # Use the index as key since we access class_info by index in render function
+                        word_to_class[i] = classification
     
     # Display title
     display(HTML("<h3>Hallucination Detection Results</h3>"))
