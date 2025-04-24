@@ -2,7 +2,13 @@ import numpy as np
 from IPython.display import display, HTML
 from spacy import displacy
 
-def render_predictions_with_scheme(tokenizer_or_text, text_or_spans, predictions_or_spans, show_scores=True, color_scheme="white-red", use_spans=True, class_info=None):
+def render_predictions_with_scheme(tokenizer_or_text, 
+                                   text_or_spans, 
+                                   predictions_or_spans, 
+                                   show_scores=True, 
+                                   color_scheme="white-red", 
+                                   use_spans=True, 
+                                   class_info=None):
     """
     Render text with highlighted tokens or spans.
     
@@ -42,16 +48,19 @@ def render_predictions_with_scheme(tokenizer_or_text, text_or_spans, predictions
             span, score = item[0], item[1]
             start, end = span
             
-            # If the word itself is included, use it for verification
-            word = item[2] if len(item) > 2 else text[start:end]
-            
             # Determine class if class_info is provided
             entity_class = class_info.get(i, 1) if class_info else 1
+            
+            # Create label - add thin space for class 1
+            if entity_class == 0:
+                label = f"{score:.2f}\u200A" # Score with thin space for class 0
+            else:
+                label = f"{score:.2f}"
             
             ents.append({
                 "start": start,
                 "end": end,
-                "label": f"{score:.2f}",
+                "label": label,
                 "score": score,
                 "class": entity_class
             })
@@ -83,7 +92,7 @@ def render_predictions_with_scheme(tokenizer_or_text, text_or_spans, predictions
     colors = {}
     for ent in ents:
         score = ent['score']
-        label = f"{score:.2f}"
+        label = ent['label']
         
         # Choose color based on class and color scheme
         entity_class = ent.get('class', 1)  # Default to class 1 if not specified
@@ -97,7 +106,7 @@ def render_predictions_with_scheme(tokenizer_or_text, text_or_spans, predictions
                 colors[label] = f"rgba(255, {255 - int(score * 150)}, {255 - int(score * 150)}, {0.2 + score * 0.6})"
         
         elif color_scheme == "blue-red":
-            # Class 0: Blue 
+            # Class 0: Blue I
             if entity_class == 0:
                 colors[label] = f"rgba(100, 150, 255, {0.3 + score * 0.5})"
             # Class 1: Red
@@ -151,27 +160,31 @@ def display_hallucination_results_words(result, show_scores=True, color_scheme="
         response_text = result['text']
         sentences = result['candidate_sentences']
         
-        # Find exact positions of sentences sequentially
+        # Find sentence positions
         sentence_positions = []
         current_pos = 0
-        for sentence in sentences:
+        for sent_idx, sentence in enumerate(sentences):
             pos = response_text.find(sentence, current_pos)
             if pos != -1:
-                sentence_positions.append((pos, pos + len(sentence)))
-                current_pos = pos + len(sentence)  # Move past this position to find next occurrence
+                classification = result['ck_results'][sent_idx]['prediction']
+                sentence_positions.append((pos, pos + len(sentence), classification))
+                current_pos = pos + len(sentence)
         
-        # Map each word to its sentence class
+        # Map words to sentences (one pass through both ordered lists)
+        sent_idx = 0
         for i, item in enumerate(high_scoring_words):
             position = item[0]
-            if isinstance(position, (list, tuple)):
-                token_start, token_end = position[0], position[1]
+            token_start, token_end = position[0], position[1]
+            
+            # Move to next sentence if needed
+            while sent_idx < len(sentence_positions) and sentence_positions[sent_idx][1] < token_start:
+                sent_idx += 1
                 
-                # Check which sentence contains this token
-                for sent_idx, (start, end) in enumerate(sentence_positions):
-                    if sent_idx < len(result['ck_results']) and token_start >= start and token_end <= end:
-                        classification = result['ck_results'][sent_idx]['prediction']
-                        word_to_class[i] = classification
-                        break
+            # Check if word is in current sentence
+            if sent_idx < len(sentence_positions):
+                start, end, classification = sentence_positions[sent_idx]
+                if token_start >= start and token_end <= end:
+                    word_to_class[i] = classification
     
     # Display title
     display(HTML("<h3>Hallucination Detection Results</h3>"))
