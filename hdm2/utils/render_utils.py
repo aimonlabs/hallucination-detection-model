@@ -148,38 +148,27 @@ def display_hallucination_results_words(result, show_scores=True, color_scheme="
     # Create a mapping from words to sentence classes
     word_to_class = {}
     if separate_classes and 'candidate_sentences' in result and 'ck_results' in result:
-        # Find the exact positions of sentences in the full response
-        response_text = result.get('response', '')
         sentences = result['candidate_sentences']
-        current_pos = 0
-        sentence_positions = []
         
-        for sentence in sentences:
-            pos = response_text.find(sentence, current_pos)
-            if pos != -1:
-                sentence_positions.append((pos, pos + len(sentence)))
-                current_pos = pos + len(sentence)
-        
-        # Map sentences to their classifications
-        sentence_class = {}
-        for i, (start, end) in enumerate(sentence_positions):
+        # Create word to sentence class mapping
+        for i, sentence in enumerate(result['candidate_sentences']):
             if i < len(result['ck_results']):
-                # 0 = common knowledge, 1 = hallucination
+                # Get classification (0 = common knowledge, 1 = hallucination)
                 classification = 0 if result['ck_results'][i] == 'Common Knowledge' else 1
-                sentence_class[(start, end)] = classification
-        
-        # Map each token to a class based solely on position
-        for item in high_scoring_words:
-            # Extract the position (always the first two elements)
-            start, end = item[0], item[1]
-            
-            # Find which sentence contains this position
-            for (sent_start, sent_end), class_val in sentence_class.items():
-                if start >= sent_start and end <= sent_end:
-                    # Use the token itself as the key
-                    token = response_text[start:end]
-                    word_to_class[token] = class_val
-                    break
+                
+                # Find position of this sentence in the text
+                start_pos = response_text.find(sentence)
+                end_pos = start_pos + len(sentence)
+                
+                # Map each token position to this classification
+                for item in high_scoring_words:
+                    token_start, token_end = item[0], item[1]
+                    
+                    # Check if token is within this sentence
+                    if token_start >= start_pos and token_end <= end_pos:
+                        # Get the token text
+                        token = response_text[token_start:token_end]
+                        word_to_class[token] = classification
     
     # Display title
     display(HTML("<h3>Hallucination Detection Results</h3>"))
