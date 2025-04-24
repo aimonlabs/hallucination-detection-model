@@ -153,6 +153,35 @@ hdm = HallucinationDetectionModel(
     ck_classifier_path="path/to/ck_classifier/"
 )
 ```
+### Detection with word-level annotations
+
+Please refer to the [model page on HuggingFace](https://huggingface.co/AimonLabs/hallucination-detection-model) for an example on how to display word-level annotations for inspecting the output of the model.
+
+An example from a different call is shown below.
+
+```
+from hdm2.utils.render_utils import display_hallucination_results_words
+
+display_hallucination_results_words(
+    results,
+    show_scores=False, # True if you want to display scores alongside the candidate words
+    color_scheme="blue-red",
+    separate_classes=True, # False if you don't want separate colors for Common Knowledge sentences
+)
+```
+
+The color tones indicate the scores (darker color means higher score).
+Words with red background are hallucinations.
+Words with blue background are context-hallucinations but marked as problem-free by the common-knowledge checker.
+Words with white background are problem-free text.
+Finally, all the candidate sentences (sentences that contain context-hallucinations) are shown at the bottom, together with results from the common-knowledge checker.
+
+![image/png](https://cdn-uploads.huggingface.co/production/uploads/66b686e15ffbd1973ae61d01/raBYWT31RF-90NWA-zOcc.png)
+
+Notice that 
+- Innocuous statements like *Can I help you with something else?*, and *Hi, I'm an AIMon bot* are not marked as hallucinations.
+- Common-knowledge statements are correctly filtered out by the common-knowledge checker, even though they are not present in the context, e.g., *Heart disease remains the leading cause of death globally, according to the World Health Organization.*
+- Statements with enterprise knowledge cannot be handled by this model. Please contact us if you want to use additional capabilities for your use-cases.
 
 ## Output Format
 
