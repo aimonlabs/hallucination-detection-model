@@ -218,8 +218,10 @@ def display_hallucination_results_words(result,
             ck_result = result['ck_results'][i]
             
             if ck_result:
-                confidence = ck_result['hallucination_probability']
                 prediction_class = ck_result['prediction']
+
+                confidence = ck_result['hallucination_probability'] \
+                    if prediction_class == 1 else ck_result['non_hallucination_probability']
                 
                 if separate_classes and prediction_class == 0:
                     # Blue gradient for class 0
