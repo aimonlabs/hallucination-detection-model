@@ -61,7 +61,7 @@ class HallucinationDetectionModel:
              debug=False,
              is_include_spans=True,
              return_unadjusted_scores=True,
-             adjustment_factor=2.0,
+             adjustment_factor=1.0,
              ):
         """
         Apply hallucination detection to a prompt, context and response.
