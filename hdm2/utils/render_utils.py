@@ -148,34 +148,38 @@ def display_hallucination_results_words(result, show_scores=True, color_scheme="
     # Create a mapping from words to sentence classes if separate_classes is True
     word_to_class = {}
     if separate_classes and 'candidate_sentences' in result and 'ck_results' in result:
-        # Get exact positions of each sentence in the response
-        sentence_positions = []
+        # Find the exact positions of sentences in the full response
+        sentences = result['candidate_sentences']
         current_pos = 0
+        sentence_positions = []
         
-        # For each sentence, find its exact position in the response
-        for sentence in result['candidate_sentences']:
-            # Find the sentence starting from the current position to avoid duplicates
-            sent_pos = response_text.find(sentence, current_pos)
-            if sent_pos != -1:
-                sentence_positions.append((sent_pos, sent_pos + len(sentence)))
-                # Update current position to avoid finding the same sentence again
-                current_pos = sent_pos + len(sentence)
+        for sentence in sentences:
+            pos = response_text.find(sentence, current_pos)
+            if pos != -1:
+                sentence_positions.append((pos, pos + len(sentence), sentence))
+                current_pos = pos + len(sentence)
         
-        # Create a mapping from sentence position to its classification
-        sentence_to_class = {}
-        for (start, end), ck_result in zip(sentence_positions, result['ck_results']):
-            sentence_to_class[(start, end)] = ck_result['prediction']
+        # Map sentences to their classifications
+        sentence_class = {}
+        for i, (start, end, sentence) in enumerate(sentence_positions):
+            if i < len(result['ck_results']):
+                # 0 = common knowledge, 1 = hallucination
+                classification = 0 if result['ck_results'][i] == 'Common Knowledge' else 1
+                sentence_class[(start, end)] = classification
         
-        # Map each word to its sentence
-        for i, item in enumerate(high_scoring_words):
-            word_span = item[0]
-            word_start = word_span[0]
-            word_end = word_span[1]
+        # Assign class to each word based on its position in a sentence
+        for word_info in high_scoring_words:
+            word = word_info['word']
+            pos = word_info['position']
+            score = word_info['score']
             
-            # Check which sentence contains this word
-            for (sent_start, sent_end), sent_class in sentence_to_class.items():
-                if sent_start <= word_start < sent_end:
-                    word_to_class[i] = sent_class
+            word_start = pos[0] 
+            word_end = pos[1]
+            
+            # Find which sentence contains this word
+            for (sent_start, sent_end), class_val in sentence_class.items():
+                if word_start >= sent_start and word_end <= sent_end:
+                    word_to_class[word] = class_val
                     break
     
     # Display title
