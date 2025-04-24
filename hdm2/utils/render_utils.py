@@ -169,7 +169,7 @@ def display_hallucination_results_words(result, show_scores=True, color_scheme="
                 # Check which sentence contains this token
                 for sent_idx, (start, end) in enumerate(sentence_positions):
                     if sent_idx < len(result['ck_results']) and token_start >= start and token_end <= end:
-                        classification = 0 if result['ck_results'][sent_idx] == 'Common Knowledge' else 1
+                        classification = result['ck_results'][sent_idx]['prediction']
                         word_to_class[i] = classification
                         break
     
