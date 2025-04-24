@@ -149,6 +149,7 @@ def display_hallucination_results_words(result, show_scores=True, color_scheme="
     word_to_class = {}
     if separate_classes and 'candidate_sentences' in result and 'ck_results' in result:
         # Find the exact positions of sentences in the full response
+        response_text = result.get('response', '')
         sentences = result['candidate_sentences']
         current_pos = 0
         sentence_positions = []
@@ -167,18 +168,18 @@ def display_hallucination_results_words(result, show_scores=True, color_scheme="
                 classification = 0 if result['ck_results'][i] == 'Common Knowledge' else 1
                 sentence_class[(start, end)] = classification
         
-        # Use the position directly from each tuple in high_scoring_words
+        # Map each token to a class based solely on position
         for item in high_scoring_words:
-            if len(item) >= 3:  # Position is the 2nd element (index 1)
-                word = item[0]
-                start = item[1]
-                end = item[2]
-                
-                # Find which sentence contains this position
-                for (sent_start, sent_end), class_val in sentence_class.items():
-                    if start >= sent_start and end <= sent_end:
-                        word_to_class[word] = class_val
-                        break
+            # Extract the position (always the first two elements)
+            start, end = item[0], item[1]
+            
+            # Find which sentence contains this position
+            for (sent_start, sent_end), class_val in sentence_class.items():
+                if start >= sent_start and end <= sent_end:
+                    # Use the token itself as the key
+                    token = response_text[start:end]
+                    word_to_class[token] = class_val
+                    break
     
     # Display title
     display(HTML("<h3>Hallucination Detection Results</h3>"))
