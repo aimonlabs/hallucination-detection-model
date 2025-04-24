@@ -146,27 +146,25 @@ def display_hallucination_results_words(result, show_scores=True, color_scheme="
     high_scoring_words = result['high_scoring_words']
     
     # Create a mapping from words to sentence classes if separate_classes is True
+# Create a mapping from words to sentence classes if separate_classes is True
     word_to_class = {}
     if separate_classes and 'candidate_sentences' in result and 'ck_results' in result:
-        # Create a mapping from sentence text to its class
-        sentence_to_class = {}
-        for sentence_result in result['ck_results']:
-            sentence_to_class[sentence_result['text']] = sentence_result['prediction']
+        # Create direct mapping from sentence text to classification
+        sentence_class = {}
+        for idx, (sentence, ck_result) in enumerate(zip(result['candidate_sentences'], result['ck_results'])):
+            sentence_class[sentence] = ck_result['prediction']
         
-        # For each high-scoring word, find which sentence it belongs to
+        # Find sentence for each word
         for i, item in enumerate(high_scoring_words):
-            start_pos = item[0][0]
+            span = item[0]
+            word_pos = span[0]
             
             # Find which sentence contains this word
-            for sentence in result['candidate_sentences']:
-                sentence_start = response_text.find(sentence)
-                if sentence_start != -1:
-                    sentence_end = sentence_start + len(sentence)
-                    
-                    # If word is in this sentence
-                    if sentence_start <= start_pos < sentence_end:
-                        word_to_class[i] = sentence_to_class.get(sentence, 1)
-                        break
+            for sentence, cls in sentence_class.items():
+                sent_start = response_text.find(sentence)
+                if sent_start <= word_pos < sent_start + len(sentence):
+                    word_to_class[i] = cls
+                    break
     
     # Display title
     display(HTML("<h3>Hallucination Detection Results</h3>"))
