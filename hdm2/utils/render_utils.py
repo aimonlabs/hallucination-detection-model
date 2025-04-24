@@ -145,7 +145,7 @@ def display_hallucination_results_words(result, show_scores=True, color_scheme="
     # Get high scoring words
     high_scoring_words = result['high_scoring_words']
     
-    # Create a mapping from words to sentence classes if separate_classes is True
+    # Create a mapping from words to sentence classes
     word_to_class = {}
     if separate_classes and 'candidate_sentences' in result and 'ck_results' in result:
         # Find the exact positions of sentences in the full response
@@ -156,31 +156,29 @@ def display_hallucination_results_words(result, show_scores=True, color_scheme="
         for sentence in sentences:
             pos = response_text.find(sentence, current_pos)
             if pos != -1:
-                sentence_positions.append((pos, pos + len(sentence), sentence))
+                sentence_positions.append((pos, pos + len(sentence)))
                 current_pos = pos + len(sentence)
         
         # Map sentences to their classifications
         sentence_class = {}
-        for i, (start, end, sentence) in enumerate(sentence_positions):
+        for i, (start, end) in enumerate(sentence_positions):
             if i < len(result['ck_results']):
                 # 0 = common knowledge, 1 = hallucination
                 classification = 0 if result['ck_results'][i] == 'Common Knowledge' else 1
                 sentence_class[(start, end)] = classification
         
-        # Assign class to each word based on its position in a sentence
-        for word_info in high_scoring_words:
-            word = word_info['word']
-            pos = word_info['position']
-            score = word_info['score']
-            
-            word_start = pos[0] 
-            word_end = pos[1]
-            
-            # Find which sentence contains this word
-            for (sent_start, sent_end), class_val in sentence_class.items():
-                if word_start >= sent_start and word_end <= sent_end:
-                    word_to_class[word] = class_val
-                    break
+        # Use the position directly from each tuple in high_scoring_words
+        for item in high_scoring_words:
+            if len(item) >= 3:  # Position is the 2nd element (index 1)
+                word = item[0]
+                start = item[1]
+                end = item[2]
+                
+                # Find which sentence contains this position
+                for (sent_start, sent_end), class_val in sentence_class.items():
+                    if start >= sent_start and end <= sent_end:
+                        word_to_class[word] = class_val
+                        break
     
     # Display title
     display(HTML("<h3>Hallucination Detection Results</h3>"))
