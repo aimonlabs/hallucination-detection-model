@@ -148,33 +148,30 @@ def display_hallucination_results_words(result, show_scores=True, color_scheme="
     # Create a mapping from words to sentence classes
     word_to_class = {}
     if separate_classes and 'candidate_sentences' in result and 'ck_results' in result:
+        response_text = result['text']
         sentences = result['candidate_sentences']
         
-        # Create word to sentence class mapping
-        for i, sentence in enumerate(result['candidate_sentences']):
-            if i < len(result['ck_results']):
-                # Get classification (0 = common knowledge, 1 = hallucination)
-                classification = 0 if result['ck_results'][i] == 'Common Knowledge' else 1
+        # Find exact positions of sentences sequentially
+        sentence_positions = []
+        current_pos = 0
+        for sentence in sentences:
+            pos = response_text.find(sentence, current_pos)
+            if pos != -1:
+                sentence_positions.append((pos, pos + len(sentence)))
+                current_pos = pos + 1  # Move past this position to find next occurrence
+        
+        # Map each word to its sentence class
+        for i, item in enumerate(high_scoring_words):
+            position = item[0]
+            if isinstance(position, (list, tuple)):
+                token_start, token_end = position[0], position[1]
                 
-                # Find position of this sentence in the text
-                start_pos = response_text.find(sentence)
-                end_pos = start_pos + len(sentence)
-                
-                # Map each token position to this classification
-                for i, item in enumerate(high_scoring_words):
-                    # Handle different formats
-                    # Position is a tuple/list in the first element
-                    position = item[0]
-                    if isinstance(position, (list, tuple)):
-                        token_start, token_end = position[0], position[1]
-                    else:
-                        # If directly a number, needs different handling
-                        continue  # Skip if can't determine position
-                    
-                    # Check if token is within this sentence
-                    if token_start >= start_pos and token_end <= end_pos:
-                        # Use the index as key since we access class_info by index in render function
+                # Check which sentence contains this token
+                for sent_idx, (start, end) in enumerate(sentence_positions):
+                    if sent_idx < len(result['ck_results']) and token_start >= start and token_end <= end:
+                        classification = 0 if result['ck_results'][sent_idx] == 'Common Knowledge' else 1
                         word_to_class[i] = classification
+                        break
     
     # Display title
     display(HTML("<h3>Hallucination Detection Results</h3>"))
