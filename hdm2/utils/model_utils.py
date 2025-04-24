@@ -361,6 +361,8 @@ def _detect_hallucinations(prompt, context, response,
         if use_truncated_context:
             prompt_ = remove_newlines(prompt)
             context_ = remove_newlines(context)
+            response_ = remove_newlines(response)
+
             combined_context_for_ck = prompt_ + " " + context_
             #combined_context_for_ck = prompt.replace("\n", " ") + " " + context.replace("\n", " ")
 
@@ -373,7 +375,7 @@ def _detect_hallucinations(prompt, context, response,
                 use_last_tokens=False,
                 use_truncated_context=True,
                 context=combined_context_for_ck,
-                response=response,
+                response=response_,
                 sentences=sentences_data["sentences"],
                 candidate_indices=candidate_indices,
                 layer_id=ck_layer_ix,
