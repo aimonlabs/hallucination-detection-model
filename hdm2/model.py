@@ -59,7 +59,10 @@ class HallucinationDetectionModel:
              use_last_tokens=False,
              use_truncated_context=True,
              debug=False,
-             is_include_spans=True):
+             is_include_spans=True,
+             return_unadjusted_scores=True,
+             adjustment_factor=2.0,
+             ):
         """
         Apply hallucination detection to a prompt, context and response.
         
@@ -92,5 +95,7 @@ class HallucinationDetectionModel:
             use_truncated_context=use_truncated_context,
             debug=debug,
             is_include_spans=is_include_spans,
-            device=self.device
+            device=self.device,
+            return_unadjusted_scores=return_unadjusted_scores,
+            adjustment_factor=adjustment_factor,
         ) 
