@@ -146,24 +146,23 @@ def display_hallucination_results_words(result, show_scores=True, color_scheme="
     high_scoring_words = result['high_scoring_words']
     
     # Create a mapping from words to sentence classes if separate_classes is True
-# Create a mapping from words to sentence classes if separate_classes is True
     word_to_class = {}
     if separate_classes and 'candidate_sentences' in result and 'ck_results' in result:
-        # Create direct mapping from sentence text to classification
-        sentence_class = {}
-        for idx, (sentence, ck_result) in enumerate(zip(result['candidate_sentences'], result['ck_results'])):
-            sentence_class[sentence] = ck_result['prediction']
-        
-        # Find sentence for each word
+        # Find sentence for each word by exact position matching
         for i, item in enumerate(high_scoring_words):
             span = item[0]
-            word_pos = span[0]
+            start_pos = span[0]
+            end_pos = span[1]
+            word_text = response_text[start_pos:end_pos]
             
-            # Find which sentence contains this word
-            for sentence, cls in sentence_class.items():
-                sent_start = response_text.find(sentence)
-                if sent_start <= word_pos < sent_start + len(sentence):
-                    word_to_class[i] = cls
+            for sent_idx, sentence in enumerate(result['candidate_sentences']):
+                sent_pos = response_text.find(sentence)
+                sent_end = sent_pos + len(sentence)
+                
+                # Check if word is FULLY contained within this sentence's boundaries
+                if sent_pos <= start_pos and end_pos <= sent_end:
+                    # Get prediction directly by index to avoid text matching issues
+                    word_to_class[i] = result['ck_results'][sent_idx]['prediction']
                     break
     
     # Display title
