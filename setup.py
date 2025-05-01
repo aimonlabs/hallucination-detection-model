@@ -3,14 +3,15 @@ import os
 
 # Define dependencies directly in setup.py
 requirements = [
-    "bitsandbytes>=0.45.5",
-    "huggingface_hub>=0.29.2",
-    "nltk>=3.9.1",
-    "numpy>=2.2.0",
-    "peft>=0.14.0",
-    "safetensors>=0.5.3",
-    "torch>=2.6.0",
-    "transformers>=4.49.0"
+    "torch>=2.0.0",
+    "transformers>=4.30.0",
+    "peft>=0.4.0",
+    "bitsandbytes>=0.40.0",
+    "nltk>=3.8.0",
+    "numpy>=1.22.0",
+    "huggingface_hub>=0.16.0",
+    "safetensors>=0.3.0",
+    "tqdm>=4.65.0"
 ]
 
 # Read the long description from README.md
