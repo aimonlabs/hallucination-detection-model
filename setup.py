@@ -23,7 +23,7 @@ if os.path.exists(readme_path):
 
 setup(
     name="hdm2",
-    version="0.6.0",
+    version="0.7.0",
     author="Bibek Paudel",
     author_email="bibek@aimon.ai",
     description="A tool for detecting and quantifying hallucinations in LLM responses through context and common knowledge verification",
