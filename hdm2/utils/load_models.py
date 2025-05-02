@@ -148,6 +148,8 @@ def load_model_components(
     
     # 7. Move model to device
     model = model.to(device)
+
+    model.eval()
     
     return model, tokenizer
 
@@ -161,6 +163,9 @@ def load_ck_checkpoint(model, checkpoint_path):
     state_dict = load_file(model_path)
     
     model.load_state_dict(state_dict)
+
+    model.eval()
+    
     return model
 
 def load_hallucination_detection_model(
